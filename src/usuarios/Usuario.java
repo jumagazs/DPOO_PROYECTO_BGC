@@ -10,5 +10,12 @@ public abstract class Usuario {
 		this.login = login;
 		this.contrasena = contrasena;
 	}
+	
+	public String getLogin() {
+        return login;
+    }
 
+    public String getContrasena() {
+        return contrasena;
+    }
 }
