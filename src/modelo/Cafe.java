@@ -16,6 +16,7 @@ import pedidos.DetallePedido;
 import juegos.JuegoMesaVenta;
 import ventas.DetalleVenta;
 import ventas.VentaJuego;
+import java.time.LocalDateTime;
 
 public class Cafe {
     private Map<String, Usuario> usuarios;
@@ -29,6 +30,10 @@ public class Cafe {
     private Map<String, JuegoMesaVenta> juegosVenta;
     private List<VentaJuego> ventas;
     private int consecutivoVentas;
+    private List<SolicitudCambioTurno> solicitudesCambioTurno;
+    private int consecutivoSolicitudes;
+    private List<SugerenciaPlato> sugerencias;
+    private int consecutivoSugerencias;
 
     public Cafe() {
         this.usuarios = new HashMap<>();
@@ -42,6 +47,10 @@ public class Cafe {
         this.juegosVenta = new HashMap<>();
         this.ventas = new ArrayList<>();
         this.consecutivoVentas = 1;
+        this.solicitudesCambioTurno = new ArrayList<>();
+        this.consecutivoSolicitudes = 1;
+        this.sugerencias = new ArrayList<>();
+        this.consecutivoSugerencias = 1;
     }
 
     public Cliente registrarCliente(String login, String contrasena) throws Exception {
@@ -247,6 +256,7 @@ public class Cafe {
 
         return venta;
     }
+    //requermiento 11 //
     public void agregarJuegoFavoritoAUsuario(String login, String idJuego) throws Exception{
         if (!usuarios.containsKey(login)){
             throw new Exception(" El usuario no existe ");
@@ -266,4 +276,249 @@ public class Cafe {
 
         return usuarios.get(login).getJuegosFavoritos();
     }
+
+    //requerimiento 12 //
+    public Turno consultarTurnoEmpleado(String login) throws Exception {
+
+        if (!usuarios.containsKey(login)) {
+            throw new Exception("El usuario no existe.");
+        }
+
+        Usuario usuario = usuarios.get(login);
+
+        if (!(usuario instanceof Empleado)) {
+            throw new Exception("El usuario no es un empleado.");
+        }
+
+        Empleado empleado = (Empleado) usuario;
+
+        return empleado.consultarTurno();
+    }
+
+    //requermiento 13 //
+    
+    public SolicitudCambioTurno solicitarCambioTurnoGeneral(String login) throws Exception {
+
+        if (!usuarios.containsKey(login) || !(usuarios.get(login) instanceof Empleado)) {
+            throw new Exception("El usuario debe ser un empleado.");
+        }   
+
+        Empleado emp = (Empleado) usuarios.get(login);
+
+        String id = "SC" + consecutivoSolicitudes++;
+
+        SolicitudCambioTurno solicitud = new SolicitudCambioTurno(
+                id,
+                "GENERAL",
+                java.time.LocalDateTime.now(),
+                emp,
+                null,
+                emp.consultarTurno(),
+                null
+        );
+
+        solicitudesCambioTurno.add(solicitud);
+        return solicitud;
+    }
+
+    //metodos requerimiento 14 //
+    public VentaJuego comprarJuegoConDescuento(String login, String idJuego, int cantidad, int puntosAUsar) throws Exception {
+
+        if (!usuarios.containsKey(login)) {
+            throw new Exception("El usuario no existe.");
+        }
+
+        Usuario usuario = usuarios.get(login);
+
+        if (!juegosVenta.containsKey(idJuego)) {
+            throw new Exception("El juego no existe en el inventario.");
+        }
+
+        if (cantidad <= 0) {
+            throw new Exception("La cantidad debe ser mayor a 0.");
+        }
+
+        JuegoMesaVenta juego = juegosVenta.get(idJuego);
+
+        juego.reducirStock(cantidad);
+
+        String fechaActual = LocalDateTime.now().toString();
+
+        String idVenta = "V" + consecutivoVentas++;
+        VentaJuego venta = new VentaJuego(idVenta, fechaActual, usuario);
+
+        DetalleVenta detalle = new DetalleVenta(cantidad, juego);
+        venta.agregarDetalle(detalle);
+
+        venta.calcularValores(0.19);
+
+        double totalFinal = venta.getTotal();
+
+        if (usuario instanceof Cliente) {
+
+            Cliente cliente = (Cliente) usuario;
+
+            if (puntosAUsar > 0) {
+                cliente.usarPuntos(puntosAUsar);
+
+                totalFinal -= puntosAUsar;
+
+                if (totalFinal < 0) {
+                    totalFinal = 0;
+                }
+            }
+
+            cliente.agregarPuntos(venta.getPuntosGenerados());
+        }
+
+        else if (usuario instanceof Empleado) {
+
+            Empleado emp = (Empleado) usuario;
+
+            double descuento = emp.getDescuentoEmpleado(); 
+            totalFinal = totalFinal * (1 - descuento);
+        }
+        venta.setTotal(totalFinal);
+        ventas.add(venta);
+
+        return venta;
+    }
+
+        //requerimiento 15
+
+    public Prestamo solicitarPrestamoJuegoFlexible(String login, String idJuego, boolean fueExplicado) throws Exception {
+
+        if (!usuarios.containsKey(login)) {
+            throw new Exception("El usuario no existe.");
+        }
+
+        Usuario usuario = usuarios.get(login);
+
+        if (!juegosPrestamo.containsKey(idJuego)) {
+            throw new Exception("El juego no existe.");
+        }
+
+        JuegoMesaPrestamo juego = juegosPrestamo.get(idJuego);
+
+        if (!juego.isDisponible()) {
+            throw new Exception("El juego no está disponible.");
+        }
+
+        if (usuario instanceof Cliente) {
+
+            boolean tieneMesa = false;
+
+            for (Mesa mesa : mesas.values()) {
+                if (mesa.isOcupada()) {
+                    tieneMesa = true;
+                    break;
+                }
+            }
+
+            if (!tieneMesa) {
+                throw new Exception("El cliente debe tener una mesa asignada.");
+            }
+        }
+
+        else if (usuario instanceof Empleado) {
+
+            Empleado emp = (Empleado) usuario;
+
+            if (emp.consultarTurno() != null) {
+                throw new Exception("El empleado no puede solicitar juegos durante su turno.");
+            }
+        }
+
+        String fechaActual = LocalDateTime.now().toString();
+
+        String idPrestamo = "PR" + consecutivoPrestamos++;
+
+        Prestamo prestamo = new Prestamo(
+            idPrestamo,
+            fechaActual,
+            fueExplicado,
+            juego,
+            usuario
+        );
+
+        prestamos.add(prestamo);
+
+        juego.setDisponible(false);
+
+        return prestamo;
+    }
+
+    //requerimiento 17 //
+
+    public SugerenciaPlato sugerirPlato(String loginEmpleado, String nombrePropuesto) throws Exception {
+
+        if (!usuarios.containsKey(loginEmpleado)) {
+            throw new Exception("El usuario no existe.");
+        }
+
+        Usuario usuario = usuarios.get(loginEmpleado);
+
+        if (!(usuario instanceof Empleado)) {
+            throw new Exception("Solo los empleados pueden sugerir platos.");
+        }
+
+        if (nombrePropuesto == null || nombrePropuesto.trim().isEmpty()) {
+            throw new Exception("El nombre del plato no puede estar vacío.");
+        }
+
+        Empleado empleado = (Empleado) usuario;
+
+        String idSugerencia = "SP" + consecutivoSugerencias++;
+
+        LocalDateTime fechaActual = LocalDateTime.now();
+
+        String estadoInicial = "PENDIENTE";
+
+        SugerenciaPlato sugerencia = new SugerenciaPlato(
+            idSugerencia,
+            nombrePropuesto,
+            fechaActual,
+            estadoInicial,
+            empleado
+        );
+
+        sugerencias.add(sugerencia);
+
+        return sugerencia;
+    }
+
+    //requerimiento 18 //
+
+    public Pedido registrarPedidoMesero(String loginEmpleado, String idMesa) throws Exception {
+
+        if (!usuarios.containsKey(loginEmpleado)) {
+            throw new Exception("El usuario no existe.");
+        }
+
+        Usuario usuario = usuarios.get(loginEmpleado);
+
+        if (!(usuario instanceof Empleado)) {
+            throw new Exception("Solo un empleado puede registrar pedidos.");
+        }
+
+        if (!mesas.containsKey(idMesa)) {
+            throw new Exception("La mesa no existe.");
+        }
+
+        Mesa mesa = mesas.get(idMesa);
+
+        if (!mesa.isOcupada()) {
+            throw new Exception("La mesa debe estar ocupada.");
+        }
+
+        String idPedido = "PED" + consecutivoPedidos++;
+        String fechaActual = java.time.LocalDateTime.now().toString();
+
+        Pedido pedido = new Pedido(idPedido, fechaActual, mesa);
+
+        pedidos.add(pedido);
+
+        return pedido;
+    }
 }
+

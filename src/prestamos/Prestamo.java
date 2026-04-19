@@ -9,16 +9,16 @@ public class Prestamo {
     private String fechaDevolucion;
     private boolean fueExplicado;
     private JuegoMesaPrestamo juego;
-    private Cliente cliente;
+    private Usuario usuario;
 
     public Prestamo(String idPrestamo, String fechaPrestamo, boolean fueExplicado,
-                    JuegoMesaPrestamo juego, Cliente cliente) {
+                    JuegoMesaPrestamo juego, Usuario usuario) {
         this.idPrestamo = idPrestamo;
         this.fechaPrestamo = fechaPrestamo;
         this.fechaDevolucion = null;
         this.fueExplicado = fueExplicado;
         this.juego = juego;
-        this.cliente = cliente;
+        this.usuario = usuario;
     }
 
     public String getIdPrestamo() {

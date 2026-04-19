@@ -79,4 +79,8 @@ public class VentaJuego {
         total = subTotal + impuesto + propina;
         puntosGenerados = (int) (total / 1000);
     }
+
+    public void setTotal(double total) {
+        this.total = total;
+    }
 }
