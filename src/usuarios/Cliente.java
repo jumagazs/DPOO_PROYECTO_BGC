@@ -24,4 +24,5 @@ public class Cliente extends Usuario {
         this.puntosFidelidad -= puntos;
     }
 
+    
 }

@@ -247,4 +247,23 @@ public class Cafe {
 
         return venta;
     }
+    public void agregarJuegoFavoritoAUsuario(String login, String idJuego) throws Exception{
+        if (!usuarios.containsKey(login)){
+            throw new Exception(" El usuario no existe ");
+
+        }
+        if (!juegosPrestamo.containsKey(idJuego)){
+            throw new Exception(" El juego no existe ");
+
+        }
+        Usuario usuario = usuarios.get(login);
+        Usuario.agregarJuegoFavorito(juegosPrestamo.get(idJuego))
+    }
+    public List<JuegoMesa> consultarFavoritos(String login) throws Exception {
+        if (!usuarios.containsKey(login)) {
+            throw new Exception("El usuario no existe.");
+        }
+
+        return usuarios.get(login).getJuegosFavoritos();
+    }
 }
