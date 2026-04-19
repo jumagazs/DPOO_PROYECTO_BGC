@@ -1,7 +1,7 @@
 package prestamos;
 
 import juegos.JuegoMesaPrestamo;
-import usuarios.Cliente;
+import usuarios.*;
 
 public class Prestamo {
     private String idPrestamo;
@@ -41,8 +41,8 @@ public class Prestamo {
         return juego;
     }
 
-    public Cliente getCliente() {
-        return cliente;
+    public Usuario getUsuario() {
+        return usuario;
     }
 
     public void registrarDevolucion(String fechaDevolucion) {

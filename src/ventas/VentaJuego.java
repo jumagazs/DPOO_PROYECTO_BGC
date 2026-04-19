@@ -3,7 +3,7 @@ package ventas;
 import java.util.ArrayList;
 import java.util.List;
 
-import usuarios.Cliente;
+import usuarios.*;
 
 public class VentaJuego {
     private String idVenta;
@@ -12,13 +12,13 @@ public class VentaJuego {
     private double propina;
     private double subTotal;
     private double total;
-    private Cliente comprador;
+    private Usuario comprador;
     private int puntosGenerados;
     private int puntosUsados;
     private boolean descuentoAplicado;
     private List<DetalleVenta> detalles;
 
-    public VentaJuego(String idVenta, String fecha, Cliente comprador) {
+    public VentaJuego(String idVenta, String fecha, Usuario comprador) {
         this.idVenta = idVenta;
         this.fecha = fecha;
         this.comprador = comprador;
@@ -56,7 +56,7 @@ public class VentaJuego {
         return total;
     }
 
-    public Cliente getComprador() {
+    public Usuario getComprador() {
         return comprador;
     }
 

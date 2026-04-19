@@ -84,7 +84,7 @@ public class PruebaCafe {
             System.out.println("\nPréstamo realizado:");
             System.out.println("ID préstamo: " + prestamo1.getIdPrestamo());
             System.out.println("Juego prestado: " + prestamo1.getJuego().getNombre());
-            System.out.println("Cliente: " + prestamo1.getCliente().getLogin());
+            System.out.println("Cliente: " + prestamo1.getUsuario().getLogin());
             System.out.println("Disponible después del préstamo: " + prestamo1.getJuego().isDisponible());
             
             cafe.devolverJuego("PR1", "2026-04-17");

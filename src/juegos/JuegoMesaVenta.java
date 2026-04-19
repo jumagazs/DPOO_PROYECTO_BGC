@@ -7,7 +7,7 @@ public class JuegoMesaVenta extends JuegoMesa {
     private double costoBase;
 
     public JuegoMesaVenta(String nombre, int anioPublicacion, String editorJuego, String categoria, int minJugadores, int maxJugadores, boolean esDificil, boolean jueganMenores5, boolean jueganMenores18, String idJuegoVenta, double precioVenta, int cantidadStock, double costoBase) {
-        super(nombre, anioPublicacion, editorJuego, categoria, minJugadores, maxJugadores, esDificil, jueganMenores5, jueganMenores18);
+        super(nombre, anioPublicacion, editorJuego, categoria, minJugadores, maxJugadores, esDificil, jueganMenores5, jueganMenores18,idJuegoVenta);
         this.idJuegoVenta = idJuegoVenta;
         this.precioVenta = precioVenta;
         this.cantidadStock = cantidadStock;

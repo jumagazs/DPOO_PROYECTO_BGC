@@ -2,7 +2,7 @@ package usuarios;
 
 import java.util.ArrayList;
 import java.util.List;
-import Juegos.JuegoMesa;
+import juegos.*;
 
 public abstract class Usuario {
 	private String login;
@@ -28,7 +28,7 @@ public abstract class Usuario {
 
 	// Metodos para RF11 //
 
-	Public void agregarJuegoFavorito(JuegoMesa juego) throws Exception{
+	public void agregarJuegoFavorito(JuegoMesa juego) throws Exception{
 		if (juego == null) {
 			throw new Exception(" No puede ser nulo un juego ");
 		}
@@ -38,7 +38,7 @@ public abstract class Usuario {
 		favoritos.add(juego);
 	}
 	
-	Public void eliminarJuegoFavorito(JuegoMesa juego) throws Exception{
+	public void eliminarJuegoFavorito(JuegoMesa juego) throws Exception{
 		if(!favoritos.contains(juego)) {
 			throw new Exception(" Este juego no hace parte de favoritos ");
 		}
@@ -46,11 +46,11 @@ public abstract class Usuario {
 		favoritos.remove(juego);
 	}
 	
-	Public List<JuegoMesa> getJuegosFavoritos(){
+	public List<JuegoMesa> getJuegosFavoritos(){
 		return new ArrayList<>(favoritos);
 	}
 	
-	Public void cambiarPreferencias(List<JuegoMesa> nuevosFavoritos) throw Exception{
+	public void cambiarPreferencias(List<JuegoMesa> nuevosFavoritos) throws Exception{
 		if (nuevosFavoritos == null) {
 			throw new Exception (" No puedes pasar una informacion nula ");
 		

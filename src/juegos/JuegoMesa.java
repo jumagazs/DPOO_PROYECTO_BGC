@@ -22,14 +22,17 @@ public class JuegoMesa {
         this.esDificil = esDificil;
         this.jueganMenores5 = jueganMenores5;
         this.jueganMenores18 = jueganMenores18;
-        this.idJuego = idJuego
+        this.idJuego = idJuego;
     }
+
+
 
     public String getNombre() {
-        return nombre;
-    }
+		return nombre;
+	}
 
-    public String getCategoria() {
+
+	public String getCategoria() {
         return categoria;
     }
 

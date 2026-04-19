@@ -1,22 +1,22 @@
 package modelo;
 
 import java.util.HashMap;
+
 import java.util.Map;
-import juegos.JuegoMesaPrestamo;
-import usuarios.Cliente;
-import usuarios.Usuario;
+import juegos.*;
+import mesas.*;
+import pedidos.*;
+import prestamos.*;
+import productos.*;
+import sugerencias.*;
+import usuarios.*;
+import ventas.*;
 import java.util.Collection;
-import productos.ProductoMenu;
-import mesas.Mesa;
-import prestamos.Prestamo;
 import java.util.ArrayList;
 import java.util.List;
-import pedidos.Pedido;
-import pedidos.DetallePedido;
 import juegos.JuegoMesaVenta;
-import ventas.DetalleVenta;
-import ventas.VentaJuego;
 import java.time.LocalDateTime;
+
 
 public class Cafe {
     private Map<String, Usuario> usuarios;
@@ -267,7 +267,7 @@ public class Cafe {
 
         }
         Usuario usuario = usuarios.get(login);
-        Usuario.agregarJuegoFavorito(juegosPrestamo.get(idJuego))
+        usuario.agregarJuegoFavorito(juegosPrestamo.get(idJuego));
     }
     public List<JuegoMesa> consultarFavoritos(String login) throws Exception {
         if (!usuarios.containsKey(login)) {
@@ -375,7 +375,7 @@ public class Cafe {
 
             Empleado emp = (Empleado) usuario;
 
-            double descuento = emp.getDescuentoEmpleado(); 
+            double descuento = emp.getDescuento(); 
             totalFinal = totalFinal * (1 - descuento);
         }
         venta.setTotal(totalFinal);

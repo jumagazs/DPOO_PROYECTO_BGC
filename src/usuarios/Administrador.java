@@ -2,8 +2,9 @@ package usuarios;
 
 public class Administrador extends Usuario {
 
-	public Administrador() {
-		// TODO Auto-generated constructor stub
+
+	public Administrador(String login, String contrasena) {
+		super(login, contrasena);
 	}
 
 }
