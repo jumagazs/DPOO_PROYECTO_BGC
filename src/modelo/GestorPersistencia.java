@@ -105,6 +105,8 @@ public class GestorPersistencia {
     }
 
     // Escrinir
+    
+
 
     public void cargarTodo(Cafe cafe) throws Exception {
         BufferedReader br = new BufferedReader(new FileReader(this.rutaArchivo));
@@ -112,6 +114,10 @@ public class GestorPersistencia {
         String seccionActual = "";
 
         while ((linea = br.readLine()) != null) {
+        	
+            try {
+                
+            
             if (linea.startsWith("[")) {
                 seccionActual = linea.trim();
             } else if (!linea.trim().isEmpty()) {
@@ -131,16 +137,20 @@ public class GestorPersistencia {
                     cafe.getUsuarios().put(login, c);
 
                 } else if (seccionActual.equals("[meseros]")) {
-	                	String login = p[0].split("\t")[1];
-	                	String contrasena = p[1].split("\t")[1];
-	                	Mesero mesero = new Mesero(login, contrasena);
-	                	if (p.length > 2 && !p[2].split("\t")[1].isEmpty()) {
-	                	    for (String idJuego : p[2].split("\t")[1].split(",")) {
-	                	        mesero.agregarJuegoConocido(idJuego);
-	                	    }
-	                	}
+                    String login = p[0].split("\t")[1];
+                    String contrasena = p[1].split("\t")[1];
+                    Mesero mesero = new Mesero(login, contrasena);
+                    if (p.length > 2) {
+                        String[] parteConocidos = p[2].split("\t");
+                        if (parteConocidos.length > 1 && !parteConocidos[1].isEmpty()) {
+                            for (String idJuego : parteConocidos[1].split(",")) {
+                                if (!idJuego.isEmpty()) {
+                                    mesero.agregarJuegoDificil(idJuego);
+                                }
+                            }
+                        }
+                    }
                     cafe.getUsuarios().put(login, mesero);
-
                 } else if (seccionActual.equals("[cocineros]")) {
                     String login = p[0].split("\t")[1];
                     String contrasena = p[1].split("\t")[1];
@@ -243,8 +253,15 @@ public class GestorPersistencia {
                     pedido.setTotal(total);
                     cafe.getPedidos().add(pedido);
                 }
+                
+                
             }
+	        } catch (Exception e) {
+	            System.out.println("Error linea: [" + linea + "] - " + e.getMessage());
+	            throw e;
+	        }
         }
+        cafe.sincronizarConsecutivos();
         br.close();
     }
 }

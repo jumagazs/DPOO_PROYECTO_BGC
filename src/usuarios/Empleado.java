@@ -9,8 +9,8 @@ public abstract class Empleado extends Usuario {
 
     private List<Turno> turnos;
     private List<SolicitudCambioTurno> solicitudes;
-	private static double DESCUENTO_EMPlEADO = 0.20;
-	private static double DESCUENTO_CLIENTE = 0.10;
+	private static double DESCUENTO_EMPLEADO = 0.20;
+
 	private String codigoDescuento;
 
     public Empleado(String login, String contrasena) {
@@ -56,12 +56,9 @@ public abstract class Empleado extends Usuario {
 	}
     
 	public double getDescuentoEMP() { 
-		return DESCUENTO_EMPlEADO;
+		return DESCUENTO_EMPLEADO;
 	}
 
-	public double getDescuentoCLI() { 
-		return DESCUENTO_CLIENTE;
-	}
 
 	public Turno getTurno(String idTurno) throws Exception {
         for (Turno t : this.turnos) {
@@ -116,6 +113,9 @@ public abstract class Empleado extends Usuario {
 		this.solicitudes = solicitudes;
 	}
     
+	public double calcularDescuento() {
+	    return this.DESCUENTO_EMPLEADO;
+	}
 	
 	
 	

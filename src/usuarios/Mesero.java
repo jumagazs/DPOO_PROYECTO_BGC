@@ -1,5 +1,6 @@
 package usuarios;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import juegos.*;
@@ -18,10 +19,11 @@ public class Mesero extends Empleado {
 
 	public Mesero(String login, String contrasena) {
 		super(login, contrasena);
+		this.juegosDificiles = new ArrayList<>();
 	}
 	
 	
-    //requerimiento 18 //
+    //RF 18 
 
 
     public Pedido registrarPedido(Mesa mesa, String idPedido, String fecha) throws Exception {
@@ -32,7 +34,9 @@ public class Mesero extends Empleado {
     }
     
     public void agregarJuegoDificil(String idJuego) {
-    		this.juegosDificiles.add(idJuego);
+        if (idJuego != null && !idJuego.isEmpty() && !this.juegosDificiles.contains(idJuego)) {
+            this.juegosDificiles.add(idJuego);
+        }
     }
     
     public boolean puedeExplicar(String idJuego) {
@@ -43,15 +47,13 @@ public class Mesero extends Empleado {
         return new Prestamo(idPrestamo, fecha, fueExplicado, juego, cliente);
     }
     
-    public void agregarJuegoConocido(String idJuego) {
-        if (!this.juegosDificiles.contains(idJuego)) {
-            this.juegosDificiles.add(idJuego);
-        }
-    }
 
     
     @Override
     public String toString() {
+        if (this.juegosDificiles.isEmpty()) {
+            return "login\t" + this.getLogin() + "|contrasena\t" + this.getContrasena();
+        }
         return "login\t" + this.getLogin() + "|contrasena\t" + this.getContrasena() + "|conocidos\t" + String.join(",", this.juegosDificiles);
     }
 }

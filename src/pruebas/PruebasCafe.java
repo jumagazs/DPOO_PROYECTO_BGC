@@ -1,8 +1,10 @@
-package modelo;
+package pruebas;
 
 import java.time.LocalDateTime;
 import java.util.*;
 import juegos.*;
+import modelo.Cafe;
+import modelo.GestorPersistencia;
 import pedidos.*;
 import prestamos.*;
 import productos.*;
@@ -82,6 +84,10 @@ public class PruebasCafe {
             System.out.println("16. Informe diario");
             System.out.println("17. Informe semanal");
             System.out.println("18. Informe mensual");
+            System.out.println("19. Ver inventario detallado préstamo");
+            System.out.println("20. Ver inventario detallado venta");
+
+
 
             System.out.println("0. Salir");
             opcion = Integer.parseInt(sc.nextLine());
@@ -248,7 +254,26 @@ public class PruebasCafe {
                 cafe.consultarInforme(login, "semanal");
             } else if (opcion == 18) {
                 cafe.consultarInforme(login, "mensual");
+            } else if (opcion == 19) {
+                Map<String, List<Prestamo>> historial = cafe.consultarInventarioPrestamo(login);
+                for (Map.Entry<String, List<Prestamo>> entry : historial.entrySet()) {
+                    JuegoMesaPrestamo j = cafe.getJuegosPrestamo().get(entry.getKey());
+                    System.out.println(j.toString());
+                    System.out.println("  Historial:");
+                    for (Prestamo p : entry.getValue()) {
+                        System.out.println("  - ID: " + p.getIdPrestamo()
+                            + " | Usuario: " + p.getUsuario().getLogin()
+                            + " | Fecha: " + p.getFechaPrestamo()
+                            + " | Devuelto: " + p.fueDevuelto());
+                    }
+                }
+            } else if (opcion == 20) {
+                Map<String, JuegoMesaVenta> inventario = cafe.consultarInventarioVenta(login);
+                for (JuegoMesaVenta j : inventario.values()) {
+                    System.out.println(j.toString());
+                }
             }
+            
         }
     }
 

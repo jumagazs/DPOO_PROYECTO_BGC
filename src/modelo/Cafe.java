@@ -357,37 +357,12 @@ public class Cafe {
 
 
         if (usuario instanceof Cliente) {
-
-            Cliente cliente = (Cliente) usuario;
-            	
-            if(codigoDescuento != null && !codigoDescuento.isEmpty()) {
-	            	boolean codigoValido = false;
-	            	for (Usuario u : this.usuarios.values()) {
-	            		if (u instanceof Empleado && ((Empleado) u).getCodigoDescuento().equals(codigoDescuento)) {
-	            			codigoValido = true;
-	            		}
-	            		
-            	}
-            	if (!codigoValido)
-                    throw new Exception("El código de descuento no es válido.");
-                if (puntosAUsar > 0)
-                    throw new Exception("El descuento y los puntos no son acumulables.");
-                descuento = 0.1;
-            	
-            } else if (puntosAUsar > 0) {
-            		cliente.usarPuntos(puntosAUsar);
-            }
-
-        }
-
-        else if (usuario instanceof Empleado) {
-
-            Empleado emp = (Empleado) usuario;
-
-            descuento = emp.getDescuentoEMP(); 
+            descuento = ((Cliente) usuario).calcularDescuento(codigoDescuento, puntosAUsar, this.usuarios.values());
+        } else if (usuario instanceof Empleado) {
             if (puntosAUsar > 0) {
-            	throw new Exception("Los empleados no pueden usar puntos.");
+                throw new Exception("Los empleados no pueden usar puntos.");
             }
+            descuento = ((Empleado) usuario).calcularDescuento();
         }
         
         venta.calcularValores(0.19, descuento, puntosAUsar);
@@ -839,8 +814,65 @@ public class Cafe {
             throw new Exception("El juego no existe.");
         }
         Administrador admin = (Administrador) usuarios.get(idAdmin);
-        admin.agregarJuegoConocidoMesero((Mesero) usuarios.get(idMesero), idJuego);
+        admin.agregarJuegoDificil((Mesero) usuarios.get(idMesero), idJuego);
     }
+    
+    public Map<String, List<Prestamo>> consultarInventarioPrestamo(String idAdmin) throws Exception {
+        if (!usuarios.containsKey(idAdmin)) {
+            throw new Exception("El usuario no existe.");
+        }
+        if (!(usuarios.get(idAdmin) instanceof Administrador)) {
+            throw new Exception("El usuario no es un administrador.");
+        }
+        Map<String, List<Prestamo>> historial = new HashMap<>();
+        for (JuegoMesaPrestamo j : this.juegosPrestamo.values()) {
+            List<Prestamo> prestamosPorJuego = new ArrayList<>();
+            for (Prestamo p : this.prestamos) {
+                if (p.getJuego().getIdJuegoPrestamo().equals(j.getIdJuegoPrestamo())) {
+                    prestamosPorJuego.add(p);
+                }
+            }
+            historial.put(j.getIdJuegoPrestamo(), prestamosPorJuego);
+        }
+        return historial;
+    }
+    
+    public Map<String, JuegoMesaVenta> consultarInventarioVenta(String idAdmin) throws Exception {
+        if (!usuarios.containsKey(idAdmin)) {
+            throw new Exception("El usuario no existe.");
+        }
+        if (!(usuarios.get(idAdmin) instanceof Administrador)) {
+            throw new Exception("El usuario no es un administrador.");
+        }
+        return this.juegosVenta;
+    }
+
+	public Map<String, ProductoMenu> getMenu() {
+		return menu;
+	}
+
+	public List<SugerenciaPlato> getSugerencias() {
+		return sugerencias;
+	}
+	
+	public void sincronizarConsecutivos() {
+	    this.consecutivoJuegosPrestamos = this.juegosPrestamo.size() + 1;
+	    this.consecutivoJuegosVentas = this.juegosVenta.size() + 1;
+	    this.consecutivoPrestamos = this.prestamos.size() + 1;
+	    this.consecutivoPedidos = this.pedidos.size() + 1;
+	    this.consecutivoVentas = this.ventas.size() + 1;
+	    this.consecutivoSolicitudes = this.solicitudesCambioTurno.size() + 1;
+	    this.consecutivoSugerencias = this.sugerencias.size() + 1;
+	    this.consecutivoProductos = this.menu.size() + 1;
+	    this.consecutivoTurnos = 1;
+	    for (Usuario u : this.usuarios.values()) {
+	        if (u instanceof Empleado) {
+	            this.consecutivoTurnos += ((Empleado) u).getTurnos().size();
+	        }
+	    }
+	}
+    
+    
     
 }
 

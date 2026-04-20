@@ -55,13 +55,7 @@ public class Administrador extends Usuario {
 	    empleado.asignarTurno(turno);
 	}
 	
-	public void aprobarCambioTurno(SolicitudCambioTurno solicitud, int meseros, int cocineros,int consecutivo) throws Exception {
-	    if (solicitud.getSolicitante() instanceof Mesero && meseros < 3) {
-	        throw new Exception("No se puede aprobar, quedarían menos de 2 meseros.");
-	    }
-	    if (solicitud.getSolicitante() instanceof Cocinero && cocineros < 2) {
-	        throw new Exception("No se puede aprobar, quedaría menos de 1 cocinero.");
-	    }
+	public void aprobarCambioTurno(SolicitudCambioTurno solicitud, int meseros, int cocineros, int consecutivo) throws Exception {
 	    if (solicitud.getEmpleadoDestino() != null) {
 	        Turno turnoSolicitante = solicitud.getTurnoSolicitante();
 	        Turno turnoDestino = solicitud.getTurnoDestino();
@@ -72,9 +66,15 @@ public class Administrador extends Usuario {
 	        solicitud.getEmpleadoDestino().eliminarTurno(turnoDestino.getIdTurno());
 	        solicitud.getEmpleadoDestino().asignarTurno(turnoSolicitante);
 	    } else {
+	        if (solicitud.getSolicitante() instanceof Mesero && meseros < 3) {
+	            throw new Exception("No se puede aprobar, quedarían menos de 2 meseros.");
+	        }
+	        if (solicitud.getSolicitante() instanceof Cocinero && cocineros < 2) {
+	            throw new Exception("No se puede aprobar, quedaría menos de 1 cocinero.");
+	        }
 	        Turno turnoActual = solicitud.getTurnoSolicitante();
 	        String nuevoId = "T" + consecutivo;
-	        Turno nuevoTurno = new Turno(nuevoId, turnoActual.getHoraInicio().plusDays(1), turnoActual.getHoraFin().plusDays(1), turnoActual.getDia(), solicitud.getSolicitante());
+	        Turno nuevoTurno = new Turno(nuevoId, turnoActual.getHoraInicio().plusMonths(1), turnoActual.getHoraFin().plusMonths(1), turnoActual.getDia(), solicitud.getSolicitante());
 	        solicitud.getSolicitante().eliminarTurno(turnoActual.getIdTurno());
 	        solicitud.getSolicitante().asignarTurno(nuevoTurno);
 	    }
@@ -154,8 +154,8 @@ public class Administrador extends Usuario {
 	    return false;
 	}
 	
-	public void agregarJuegoConocidoMesero(Mesero mesero, String idJuego) {
-	    mesero.agregarJuegoConocido(idJuego);
+	public void agregarJuegoDificil(Mesero mesero, String idJuego) {
+	    mesero.agregarJuegoDificil(idJuego);
 	}
 	
 	@Override
