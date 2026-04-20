@@ -249,7 +249,7 @@ public class Cafe {
         DetalleVenta detalle = new DetalleVenta(cantidad, juego);
 
         venta.agregarDetalle(detalle);
-        venta.calcularValores(0.19);
+        venta.calcularValores(0.19,0,0);
 
         cliente.agregarPuntos(venta.getPuntosGenerados());
         ventas.add(venta);
@@ -307,22 +307,14 @@ public class Cafe {
 
         String id = "SC" + consecutivoSolicitudes++;
 
-        SolicitudCambioTurno solicitud = new SolicitudCambioTurno(
-                id,
-                "GENERAL",
-                java.time.LocalDateTime.now(),
-                emp,
-                null,
-                emp.consultarTurno(),
-                null
-        );
+        SolicitudCambioTurno sc = emp.solicitarCambioTurnoGeneral(id,"GENERAL");
 
-        solicitudesCambioTurno.add(solicitud);
-        return solicitud;
+        solicitudesCambioTurno.add(sc);
+        return sc;
     }
 
     //metodos requerimiento 14 //
-    public VentaJuego comprarJuegoConDescuento(String login, String idJuego, int cantidad, int puntosAUsar) throws Exception {
+    public VentaJuego comprarJuegoConDescuento(String login, String idJuego, int cantidad, int puntosAUsar, String codigoDescuento) throws Exception {
 
         if (!usuarios.containsKey(login)) {
             throw new Exception("El usuario no existe.");
@@ -350,37 +342,49 @@ public class Cafe {
         DetalleVenta detalle = new DetalleVenta(cantidad, juego);
         venta.agregarDetalle(detalle);
 
-        venta.calcularValores(0.19);
+        double descuento = 0;
 
-        double totalFinal = venta.getTotal();
 
         if (usuario instanceof Cliente) {
 
             Cliente cliente = (Cliente) usuario;
-
-            if (puntosAUsar > 0) {
-                cliente.usarPuntos(puntosAUsar);
-
-                totalFinal -= puntosAUsar;
-
-                if (totalFinal < 0) {
-                    totalFinal = 0;
-                }
+            	
+            if(codigoDescuento != null && !codigoDescuento.isEmpty()) {
+	            	boolean codigoValido = false;
+	            	for (Usuario u : this.usuarios.values()) {
+	            		if (u instanceof Empleado && ((Empleado) u).getCodigoDescuento().equals(codigoDescuento)) {
+	            			codigoValido = true;
+	            		}
+	            		
+            	}
+            	if (!codigoValido)
+                    throw new Exception("El código de descuento no es válido.");
+                if (puntosAUsar > 0)
+                    throw new Exception("El descuento y los puntos no son acumulables.");
+                descuento = 0.1;
+            	
+            } else if (puntosAUsar > 0) {
+            		cliente.usarPuntos(puntosAUsar);
             }
 
-            cliente.agregarPuntos(venta.getPuntosGenerados());
         }
 
         else if (usuario instanceof Empleado) {
 
             Empleado emp = (Empleado) usuario;
 
-            double descuento = emp.getDescuento(); 
-            totalFinal = totalFinal * (1 - descuento);
+            descuento = emp.getDescuentoEMP(); 
+            if (puntosAUsar > 0) {
+            	throw new Exception("Los empleados no pueden usar puntos.");
+            }
         }
-        venta.setTotal(totalFinal);
+        
+        venta.calcularValores(0.19, descuento, puntosAUsar);
+        if (usuario instanceof Cliente) { 
+        	((Cliente) usuario).agregarPuntos(venta.getPuntosGenerados());
+        }
         ventas.add(venta);
-
+        
         return venta;
     }
 
@@ -487,38 +491,28 @@ public class Cafe {
         return sugerencia;
     }
 
-    //requerimiento 18 //
-
-    public Pedido registrarPedidoMesero(String loginEmpleado, String idMesa) throws Exception {
-
-        if (!usuarios.containsKey(loginEmpleado)) {
+    	//Requerimiento 18 
+    
+    public Pedido registrarPedidoMesero(String login, String idMesa) throws Exception {
+    	
+        if (!usuarios.containsKey(login))
             throw new Exception("El usuario no existe.");
-        }
-
-        Usuario usuario = usuarios.get(loginEmpleado);
-
-        if (!(usuario instanceof Empleado)) {
-            throw new Exception("Solo un empleado puede registrar pedidos.");
-        }
-
-        if (!mesas.containsKey(idMesa)) {
+        if (!(usuarios.get(login) instanceof Mesero))
+            throw new Exception("El usuario no es un mesero.");
+        if (!mesas.containsKey(idMesa))
             throw new Exception("La mesa no existe.");
-        }
 
+        Mesero mesero = (Mesero) usuarios.get(login);
         Mesa mesa = mesas.get(idMesa);
-
-        if (!mesa.isOcupada()) {
-            throw new Exception("La mesa debe estar ocupada.");
-        }
-
         String idPedido = "PED" + consecutivoPedidos++;
-        String fechaActual = java.time.LocalDateTime.now().toString();
-
-        Pedido pedido = new Pedido(idPedido, fechaActual, mesa);
-
+        Pedido pedido = mesero.registrarPedido(mesa, idPedido, LocalDateTime.now().toString());
         pedidos.add(pedido);
-
         return pedido;
     }
+    
+    //REquerimiento 19
+    
+    
+    
 }
 

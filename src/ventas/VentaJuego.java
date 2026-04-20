@@ -74,10 +74,13 @@ public class VentaJuego {
         total = subTotal + impuesto + propina;
     }
 
-    public void calcularValores(double porcentajeImpuesto) {
-        impuesto = subTotal * porcentajeImpuesto;
-        total = subTotal + impuesto + propina;
-        puntosGenerados = (int) (total / 1000);
+    public void calcularValores(double porcentajeImpuesto, double descuento, int puntosAUsar) {
+    		double subtotalConDescuento = this.subTotal * (1 - descuento);
+        impuesto = subtotalConDescuento * porcentajeImpuesto;
+        double totalAntesdePuntos = subtotalConDescuento + impuesto;
+        double totalFinal = totalAntesdePuntos - puntosAUsar;
+        total = Math.max(totalFinal, 0);
+        puntosGenerados = (int) (total * 0.01);
     }
 
     public void setTotal(double total) {

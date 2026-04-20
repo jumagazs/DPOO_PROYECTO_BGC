@@ -2,6 +2,7 @@ package usuarios;
 
 public class Cliente extends Usuario {
 		private int puntosFidelidad;
+		private String codigoDescuento;
 		
 	public Cliente(String login, String contrasena) {
 			super(login, contrasena);
@@ -23,6 +24,23 @@ public class Cliente extends Usuario {
         }
         this.puntosFidelidad -= puntos;
     }
+    
+    public void aplicarCodigoDescuento(String codigo) throws Exception {
+        if (codigo == null || codigo.isEmpty())
+            throw new Exception("Código inválido.");
+        this.codigoDescuento = codigo;
+    }
 
+	public String getCodigoDescuento() {
+		return codigoDescuento;
+	}
+
+	public void borrarCodigoDescuento() {
+		this.codigoDescuento = null;
+	}
+    
+    
+    
+    
     
 }

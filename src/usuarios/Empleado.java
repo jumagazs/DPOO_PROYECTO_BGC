@@ -8,11 +8,14 @@ public abstract class Empleado extends Usuario {
 
     private Turno turno;
     private List<SolicitudCambioTurno> solicitudes;
-	private double descuento; 
+	private static double DESCUENTO_EMPlEADO = 0.20;
+	private static double DESCUENTO_CLIENTE = 0.10;
+	private String codigoDescuento;
 
     public Empleado(String login, String contrasena) {
         super(login, contrasena);
         this.solicitudes = new ArrayList<>();
+        this.codigoDescuento= "EMP-" + login.hashCode();
     }
 
    // Requeriminto 12 //
@@ -50,7 +53,17 @@ public abstract class Empleado extends Usuario {
     public List<SolicitudCambioTurno> getSolicitudes() {
         return solicitudes;
     }
-	public double getDescuento() {
-    	return descuento;
+
+	public String getCodigoDescuento() {
+		return codigoDescuento;
 	}
+    
+	public double getDescuentoEMP() { 
+		return DESCUENTO_EMPlEADO;
+	}
+
+	public double getDescuentoCLI() { 
+		return DESCUENTO_CLIENTE;
+	}
+	
 }
