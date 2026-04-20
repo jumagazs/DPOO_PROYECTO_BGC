@@ -11,6 +11,7 @@ public class Pedido {
     private double propina;
     private double subtotal;
     private double total;
+    private String estado;
     private Mesa mesa;
     private List<DetallePedido> detalles;
 
@@ -23,6 +24,7 @@ public class Pedido {
         this.subtotal = 0;
         this.total = 0;
         this.detalles = new ArrayList<>();
+        this.estado = "EN PREPARACIÓN";
     }
 
     public String getIdPedido() {
@@ -67,5 +69,9 @@ public class Pedido {
         impuestoConsumo = subtotal * porcentajeImpuesto;
         propina = subtotal * porcentajePropina;
         total = subtotal + impuestoConsumo + propina;
+    }
+    
+    public void prepararPedido() {
+    		this.estado = "PREPARADO";
     }
 }

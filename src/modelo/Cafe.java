@@ -560,6 +560,31 @@ public class Cafe {
     	
     }
     
+    //RF 20
+    
+    public void prepararPedido(String idCocinero, String idPedido) throws Exception {
+    	
+        if (!usuarios.containsKey(idCocinero))
+            throw new Exception("El usuario no existe.");
+        if (!(usuarios.get(idCocinero) instanceof Cocinero))
+            throw new Exception("El usuario no es un cocinero.");
+        Usuario cocinero = this.usuarios.get(idCocinero);
+        
+        Pedido pedido = null;
+        for (Pedido p : pedidos) {
+            if (p.getIdPedido().equals(idPedido)) {
+                pedido = p;
+                break;
+            }
+        }
+        
+        if (pedido == null)
+            throw new Exception("El pedido no existe.");
+        
+        ((Cocinero) cocinero).atenderPedidos(pedido);
+        
+    }
+    
     
     
 }
