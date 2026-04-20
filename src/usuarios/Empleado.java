@@ -65,5 +65,11 @@ public abstract class Empleado extends Usuario {
 	public double getDescuentoCLI() { 
 		return DESCUENTO_CLIENTE;
 	}
+
+	public Turno getTurno() {
+		return turno;
+	}
+	
+	
 	
 }

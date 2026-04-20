@@ -35,4 +35,5 @@ public class Turno {
     public void setEmpleado(Empleado empleado) {
         this.empleado = empleado;
     }
+    
 }
