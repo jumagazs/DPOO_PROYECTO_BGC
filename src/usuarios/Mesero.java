@@ -1,5 +1,7 @@
 package usuarios;
 
+import java.util.List;
+
 import juegos.*;
 import mesas.*;
 import pedidos.*;
@@ -10,6 +12,9 @@ import usuarios.*;
 import ventas.*;
 
 public class Mesero extends Empleado {
+	
+	private List<String> juegosDificiles;
+	
 
 	public Mesero(String login, String contrasena) {
 		super(login, contrasena);
@@ -25,5 +30,16 @@ public class Mesero extends Empleado {
         return new Pedido(idPedido, fecha, mesa);
     	
     }
-
+    
+    public void agregarJuegoDificil(String idJuego) {
+    		this.juegosDificiles.add(idJuego);
+    }
+    
+    public boolean puedeExplicar(String idJuego) {
+    		return this.juegosDificiles.contains(idJuego);
+    }
+    
+    public Prestamo realizarPrestamo(JuegoMesaPrestamo juego, Mesa mesa, String idPrestamo, String fecha, boolean fueExplicado,Cliente cliente) {
+        return new Prestamo(idPrestamo, fecha, fueExplicado, juego, cliente);
+    }
 }

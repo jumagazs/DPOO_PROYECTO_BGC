@@ -52,7 +52,22 @@ public class JuegoMesa {
         return idJuego;
     }
 
-    @Override
+    
+    
+
+    public boolean isJueganMenores5() {
+		return jueganMenores5;
+	}
+
+
+
+	public boolean isJueganMenores18() {
+		return jueganMenores18;
+	}
+
+
+
+	@Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;

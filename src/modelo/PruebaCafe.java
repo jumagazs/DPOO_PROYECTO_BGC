@@ -74,7 +74,7 @@ public class PruebaCafe {
             cafe.agregarMesa(mesa2);
             cafe.agregarMesa(mesa3);
 
-            Mesa mesaAsignada = cafe.asignarMesaACliente(cliente1, 3);
+            Mesa mesaAsignada = cafe.asignarMesaACliente(cliente1, 3, false, false);
             System.out.println("\nMesa asignada al cliente: " + mesaAsignada.getIdMesa()
                     + " | Capacidad: " + mesaAsignada.getCapacidad()
                     + " | Ocupada: " + mesaAsignada.isOcupada());

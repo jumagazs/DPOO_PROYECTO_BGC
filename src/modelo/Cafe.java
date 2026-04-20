@@ -34,6 +34,7 @@ public class Cafe {
     private int consecutivoSolicitudes;
     private List<SugerenciaPlato> sugerencias;
     private int consecutivoSugerencias;
+    
 
     public Cafe() {
         this.usuarios = new HashMap<>();
@@ -105,7 +106,7 @@ public class Cafe {
         return mesas.values();
     }
 
-    public Mesa asignarMesaACliente(Cliente cliente, int cantidadPersonas) throws Exception {
+    public Mesa asignarMesaACliente(Cliente cliente, int cantidadPersonas, boolean hayJovenes, boolean hayNinos) throws Exception {
         Mesa mejorMesa = null;
 
         for (Mesa mesa : mesas.values()) {
@@ -120,7 +121,7 @@ public class Cafe {
             throw new Exception("No hay mesas disponibles para esa cantidad de personas.");
         }
 
-        mejorMesa.asignarMesa(cantidadPersonas);
+        mejorMesa.asignarMesa(cantidadPersonas,hayJovenes,hayNinos);
         return mejorMesa;
     }
     
@@ -510,7 +511,54 @@ public class Cafe {
         return pedido;
     }
     
-    //REquerimiento 19
+    //REquerimiento 19 prestamo de empleado a cliente
+    
+    public Prestamo prestamoDeJuegos(String idJuego, String idMesero, String idMesa, String idCliente) throws Exception {
+        if (!usuarios.containsKey(idMesero))
+            throw new Exception("El Meseroo no existe.");
+        if (!usuarios.containsKey(idCliente))
+            throw new Exception("El Cliente no existe.");
+        if (!(usuarios.get(idMesero) instanceof Mesero))
+            throw new Exception("El usuario no es un mesero.");
+        if (!(usuarios.get(idCliente) instanceof Cliente))
+            throw new Exception("El usuario no es un cliente.");
+        if (!mesas.containsKey(idMesa))
+            throw new Exception("La mesa no existe.");	
+	    	if(!this.juegosPrestamo.containsKey(idJuego)) {
+	    			throw new Exception("No existe el juego para prestamos");
+	    		}
+	    	JuegoMesaPrestamo juegoMesaPrestamo = this.juegosPrestamo.get(idJuego);
+	    	Mesa mesa = this.mesas.get(idMesa);
+	    	Usuario mesero = this.usuarios.get(idMesero);
+	    	Usuario cliente = this.usuarios.get(idCliente);
+	    	
+	    	
+	    	if(!juegoMesaPrestamo.isDisponible()) {
+	    		throw new Exception("No está disponible el juego");
+	    	}
+	    	if(juegoMesaPrestamo.getMinJugadores() > mesa.getPersonasActuales() || juegoMesaPrestamo.getMaxJugadores() < mesa.getPersonasActuales()) {
+	    		throw new Exception("El número de personas no es adecuado para jugar");
+	    	}
+	    	
+	    	if (juegoMesaPrestamo.isEsDificil() && !((Mesero) mesero).puedeExplicar(idJuego)) {
+	    	    System.out.println("Advertencia: ningún mesero puede explicar este juego.");
+	    	}
+	    	if( mesa.isHayJovenes() && !juegoMesaPrestamo.isJueganMenores18()) {
+	    		throw new Exception("No pueden jugarlo menores de 18");
+	    	}
+	    	if( mesa.isHayNinos() && !juegoMesaPrestamo.isJueganMenores5()) {
+	    		throw new Exception("No pueden jugarlo menores de 5");
+	    	}
+	    	
+	    	String idPrestamo = "PR" + consecutivoPrestamos++;
+	    	boolean fueExplicado = juegoMesaPrestamo.isEsDificil() && ((Mesero) mesero).puedeExplicar(idJuego);
+	    	Prestamo prestamo = ((Mesero) mesero).realizarPrestamo(juegoMesaPrestamo, mesa, idPrestamo, LocalDateTime.now().toString(), fueExplicado,(Cliente) cliente);
+	    	juegoMesaPrestamo.setDisponible(false);
+	    	prestamos.add(prestamo);
+    		
+	    	return prestamo;
+    	
+    }
     
     
     
