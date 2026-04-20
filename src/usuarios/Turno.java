@@ -4,12 +4,14 @@ import java.time.LocalDateTime;
 
 public class Turno {
 
+    private String idTurno;
     private LocalDateTime horaInicio;
     private LocalDateTime horaFin;
     private String dia;
     private Empleado empleado;
 
-    public Turno(LocalDateTime horaInicio, LocalDateTime horaFin, String dia, Empleado empleado) {
+    public Turno(String idTurno, LocalDateTime horaInicio, LocalDateTime horaFin, String dia, Empleado empleado) {
+        this.idTurno = idTurno;
         this.horaInicio = horaInicio;
         this.horaFin = horaFin;
         this.dia = dia;
@@ -35,5 +37,15 @@ public class Turno {
     public void setEmpleado(Empleado empleado) {
         this.empleado = empleado;
     }
+
+	public String getIdTurno() {
+		return idTurno;
+	}
+    
+    @Override
+    public String toString() {
+        return "idTurno\t" + this.idTurno + "|inicio\t" + this.horaInicio + "|fin\t" + this.horaFin + "|dia\t" + this.dia + "|empleado\t" + this.empleado.getLogin();
+    }
+    
     
 }

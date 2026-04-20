@@ -36,4 +36,9 @@ public class JuegoMesaVenta extends JuegoMesa {
         }
         cantidadStock -= cantidad;
     }
+    
+    @Override
+    public String toString() {
+        return "id\t" + this.idJuegoVenta + "|nombre\t" + this.nombre + "|anio\t" + this.anioPublicacion + "|editor\t" + this.editorJuego + "|categoria\t" + this.categoria + "|minJugadores\t" + this.minJugadores + "|maxJugadores\t" + this.maxJugadores + "|dificil\t" + this.esDificil + "|menores5\t" + this.jueganMenores5 + "|menores18\t" + this.jueganMenores18 + "|precio\t" + this.precioVenta + "|stock\t" + this.cantidadStock + "|costo\t" + this.costoBase;
+    }
 }

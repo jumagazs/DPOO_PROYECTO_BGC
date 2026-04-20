@@ -32,4 +32,11 @@ public abstract class ProductoMenu {
     public void setDisponible(boolean disponible) {
         this.disponible = disponible;
     }
+    
+    @Override
+    public String toString() {
+        return "id\t" + this.idProducto + "|nombre\t" + this.nombre + "|precio\t" + this.precio + "|disponible\t" + this.disponible;
+    }
+    
+    
 }

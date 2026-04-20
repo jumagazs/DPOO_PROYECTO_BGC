@@ -38,4 +38,13 @@ public class JuegoMesaPrestamo extends JuegoMesa {
     public void aumentarVecesPrestado() {
         this.vecesPrestado++;
     }
-}
+
+	public void setEstado(String estado) {
+		this.estado = estado;
+	}
+    
+	@Override
+	public String toString() {
+	    return "id\t" + this.idJuegoPrestamo + "|nombre\t" + this.nombre + "|anio\t" + this.anioPublicacion + "|editor\t" + this.editorJuego + "|categoria\t" + this.categoria + "|minJugadores\t" + this.minJugadores + "|maxJugadores\t" + this.maxJugadores + "|dificil\t" + this.esDificil + "|menores5\t" + this.jueganMenores5 + "|menores18\t" + this.jueganMenores18 + "|disponible\t" + this.disponible + "|vecesPrestado\t" + this.vecesPrestado + "|estado\t" + this.estado;
+	}
+}	

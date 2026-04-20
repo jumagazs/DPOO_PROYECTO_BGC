@@ -86,4 +86,21 @@ public class VentaJuego {
     public void setTotal(double total) {
         this.total = total;
     }
+    
+    @Override
+    public String toString() {
+        return "id\t" + this.idVenta + "|fecha\t" + this.fecha + "|comprador\t" + this.comprador.getLogin() + "|subtotal\t" + this.subTotal + "|impuesto\t" + this.impuesto + "|total\t" + this.total + "|puntos\t" + this.puntosGenerados;
+    }
+    
+    public void setSubTotal(double subTotal) {
+        this.subTotal = subTotal;
+    }
+
+    public void setImpuesto(double impuesto) {
+        this.impuesto = impuesto;
+    }
+
+    public void setPuntosGenerados(int puntosGenerados) {
+        this.puntosGenerados = puntosGenerados;
+    }
 }

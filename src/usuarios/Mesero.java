@@ -42,4 +42,16 @@ public class Mesero extends Empleado {
     public Prestamo realizarPrestamo(JuegoMesaPrestamo juego, Mesa mesa, String idPrestamo, String fecha, boolean fueExplicado,Cliente cliente) {
         return new Prestamo(idPrestamo, fecha, fueExplicado, juego, cliente);
     }
+    
+    public void agregarJuegoConocido(String idJuego) {
+        if (!this.juegosDificiles.contains(idJuego)) {
+            this.juegosDificiles.add(idJuego);
+        }
+    }
+
+    
+    @Override
+    public String toString() {
+        return "login\t" + this.getLogin() + "|contrasena\t" + this.getContrasena() + "|conocidos\t" + String.join(",", this.juegosDificiles);
+    }
 }

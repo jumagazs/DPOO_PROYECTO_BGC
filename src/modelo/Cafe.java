@@ -37,6 +37,7 @@ public class Cafe {
     private List<SugerenciaPlato> sugerencias;
     private int consecutivoSugerencias;
     private int consecutivoProductos;
+    private int consecutivoTurnos;
     
 
     public Cafe() {
@@ -55,6 +56,7 @@ public class Cafe {
         this.consecutivoSolicitudes = 1;
         this.sugerencias = new ArrayList<>();
         this.consecutivoSugerencias = 1;
+        this.consecutivoTurnos = 1;
     }
 
     public Cliente registrarCliente(String login, String contrasena) throws Exception {
@@ -158,27 +160,18 @@ public class Cafe {
         return prestamos;
     }
     
-    public void devolverJuego(String idPrestamo, String fechaDevolucion) throws Exception {
+    public void devolverJuego(String idPrestamo) throws Exception {
         Prestamo prestamoEncontrado = null;
-
         for (Prestamo prestamo : prestamos) {
             if (prestamo.getIdPrestamo().equals(idPrestamo)) {
                 prestamoEncontrado = prestamo;
                 break;
             }
         }
-
         if (prestamoEncontrado == null) {
             throw new Exception("No existe un préstamo con ese id.");
         }
-
-        if (prestamoEncontrado.fueDevuelto()) {
-            throw new Exception("Ese préstamo ya fue devuelto.");
-        }
-
-        prestamoEncontrado.registrarDevolucion(fechaDevolucion);
-        prestamoEncontrado.getJuego().setDisponible(true);
-        prestamoEncontrado.getJuego().aumentarVecesPrestado();
+        prestamoEncontrado.devolver();
     }
     
     public Pedido crearPedido(Mesa mesa) throws Exception {
@@ -222,8 +215,7 @@ public class Cafe {
         if (pedido == null) {
             throw new Exception("El pedido no existe.");
         }
-
-        pedido.calcularValores(0.08, 0.10);
+        pedido.confirmar();
     }
     
     public void agregarJuegoVenta(JuegoMesaVenta juego) {
@@ -282,7 +274,7 @@ public class Cafe {
     }
 
     //requerimiento 12 //
-    public Turno consultarTurnoEmpleado(String login) throws Exception {
+    public List<Turno> consultarTurnoEmpleado(String login) throws Exception {
 
         if (!usuarios.containsKey(login)) {
             throw new Exception("El usuario no existe.");
@@ -296,12 +288,12 @@ public class Cafe {
 
         Empleado empleado = (Empleado) usuario;
 
-        return empleado.consultarTurno();
+        return empleado.consultarTurnos();
     }
 
     //requermiento 13 //
     
-    public SolicitudCambioTurno solicitarCambioTurnoGeneral(String login) throws Exception {
+    public SolicitudCambioTurno solicitarCambioTurnoGeneral(String login,String idTurno) throws Exception {
 
         if (!usuarios.containsKey(login) || !(usuarios.get(login) instanceof Empleado)) {
             throw new Exception("El usuario debe ser un empleado.");
@@ -311,8 +303,23 @@ public class Cafe {
 
         String id = "SC" + consecutivoSolicitudes++;
 
-        SolicitudCambioTurno sc = emp.solicitarCambioTurnoGeneral(id,"GENERAL");
-
+        SolicitudCambioTurno sc = emp.solicitarCambioTurnoGeneral(id, idTurno);
+        
+        solicitudesCambioTurno.add(sc);
+        return sc;
+    }
+    
+    public SolicitudCambioTurno solicitarIntercambioTurno(String login, String idTurno, String loginDestino, String idTurnoDestino) throws Exception {
+        if (!usuarios.containsKey(login) || !(usuarios.get(login) instanceof Empleado)) {
+            throw new Exception("El usuario debe ser un empleado.");
+        }
+        if (!usuarios.containsKey(loginDestino) || !(usuarios.get(loginDestino) instanceof Empleado)) {
+            throw new Exception("El empleado destino no existe.");
+        }
+        Empleado emp = (Empleado) usuarios.get(login);
+        Empleado destino = (Empleado) usuarios.get(loginDestino);
+        String id = "SC" + consecutivoSolicitudes++;
+        SolicitudCambioTurno sc = emp.solicitarIntercambioTurno(id, idTurno, destino, idTurnoDestino);
         solicitudesCambioTurno.add(sc);
         return sc;
     }
@@ -432,9 +439,7 @@ public class Cafe {
 
             Empleado emp = (Empleado) usuario;
 
-            if (emp.consultarTurno() != null) {
-                throw new Exception("El empleado no puede solicitar juegos durante su turno.");
-            }
+            ((Empleado) usuario).validarPuedeTomarPrestamo();
         }
 
         String fechaActual = LocalDateTime.now().toString();
@@ -459,36 +464,17 @@ public class Cafe {
     //requerimiento 17 //
 
     public SugerenciaPlato sugerirPlato(String loginEmpleado, String nombrePropuesto, 
-            double precio, boolean esAlcoholica, boolean esCaliente,List<String> alergenos, String tipo) throws Exception {
-
+            double precio, boolean esAlcoholica, boolean esCaliente, List<String> alergenos, String tipo) throws Exception {
         if (!usuarios.containsKey(loginEmpleado)) {
             throw new Exception("El usuario no existe.");
         }
-
-        Usuario usuario = usuarios.get(loginEmpleado);
-
-        if (!(usuario instanceof Empleado)) {
+        if (!(usuarios.get(loginEmpleado) instanceof Empleado)) {
             throw new Exception("Solo los empleados pueden sugerir platos.");
         }
-
-        if (nombrePropuesto == null || nombrePropuesto.trim().isEmpty()) {
-            throw new Exception("El nombre del plato no puede estar vacío.");
-        }
-
-        Empleado empleado = (Empleado) usuario;
-
+        Empleado empleado = (Empleado) usuarios.get(loginEmpleado);
         String idSugerencia = "SP" + consecutivoSugerencias++;
-
-        LocalDateTime fechaActual = LocalDateTime.now();
-
-        String estadoInicial = "PENDIENTE";
-
-        SugerenciaPlato sugerencia = new SugerenciaPlato( idSugerencia,  nombrePropuesto,  fechaActual,
-        		estadoInicial,  empleado,  precio,  esAlcoholica,
-    			 esCaliente,  alergenos,  tipo);
-
+        SugerenciaPlato sugerencia = empleado.sugerirPlato(idSugerencia, nombrePropuesto, precio, esAlcoholica, esCaliente, alergenos, tipo);
         sugerencias.add(sugerencia);
-
         return sugerencia;
     }
 
@@ -683,7 +669,7 @@ public class Cafe {
             if (u instanceof Cocinero) cocineros++;
         }
         Administrador admin = ((Administrador) this.usuarios.get(idAdmin));
-        admin.aprobarCambioTurno(solicitud, meseros, cocineros);
+        admin.aprobarCambioTurno(solicitud, meseros, cocineros, consecutivoTurnos++);
     }
 
     public void rechazarCambioTurno(String idAdmin, String idSolicitud) throws Exception {
@@ -771,7 +757,90 @@ public class Cafe {
             throw new Exception("La sugerencia no existe.");
         ((Administrador) usuarios.get(idAdmin)).rechazarSugerenciaPlato(sugerencia);
     }
+  
+    
+    public void cambiarEstadoJuego(String idAdmin, String idJuego, String nuevoEstado) throws Exception {
+        if (!usuarios.containsKey(idAdmin)) {
+            throw new Exception("El usuario no existe.");
+        }
+        if (!(usuarios.get(idAdmin) instanceof Administrador)) {
+            throw new Exception("El usuario no es un administrador.");
+        }
+        if (!juegosPrestamo.containsKey(idJuego)) {
+            throw new Exception("El juego no existe en el inventario de préstamo.");
+        }
+        Administrador admin = (Administrador) usuarios.get(idAdmin);
+        admin.cambiarEstadoJuego(juegosPrestamo.get(idJuego), nuevoEstado);
+    }
 
+    public void eliminarJuegoPrestamo(String idAdmin, String idJuego) throws Exception {
+        if (!usuarios.containsKey(idAdmin)) {
+            throw new Exception("El usuario no existe.");
+        }
+        if (!(usuarios.get(idAdmin) instanceof Administrador)) {
+            throw new Exception("El usuario no es un administrador.");
+        }
+        Administrador admin = (Administrador) usuarios.get(idAdmin);
+        admin.eliminarJuegoPrestamo(this.juegosPrestamo, idJuego);
+    }
+
+    public void eliminarJuegoVenta(String idAdmin, String idJuego) throws Exception {
+        if (!usuarios.containsKey(idAdmin)) {
+            throw new Exception("El usuario no existe.");
+        }
+        if (!(usuarios.get(idAdmin) instanceof Administrador)) {
+            throw new Exception("El usuario no es un administrador.");
+        }
+        Administrador admin = (Administrador) usuarios.get(idAdmin);
+        admin.eliminarJuegoVenta(this.juegosVenta, idJuego);
+    }
+    
+    public void consultarInforme(String idAdmin, String granularidad) throws Exception {
+        if (!usuarios.containsKey(idAdmin)) {
+            throw new Exception("El usuario no existe.");
+        }
+        if (!(usuarios.get(idAdmin) instanceof Administrador)) {
+            throw new Exception("El usuario no es un administrador.");
+        }
+        Administrador admin = (Administrador) usuarios.get(idAdmin);
+        admin.consultarInforme(this.ventas, this.pedidos, granularidad);
+    }
+    
+    public Map<String, JuegoMesaPrestamo> getJuegosPrestamo() {
+        return this.juegosPrestamo;
+    }
+
+    public Map<String, JuegoMesaVenta> getJuegosVenta() {
+        return this.juegosVenta;
+    }
+
+    public List<VentaJuego> getVentas() {
+        return this.ventas;
+    }
+
+    public List<Pedido> getPedidos() {
+        return this.pedidos;
+    }
+    
+    public void agregarJuegoConocidoMesero(String idAdmin, String idMesero, String idJuego) throws Exception {
+        if (!usuarios.containsKey(idAdmin)) {
+            throw new Exception("El usuario no existe.");
+        }
+        if (!(usuarios.get(idAdmin) instanceof Administrador)) {
+            throw new Exception("El usuario no es un administrador.");
+        }
+        if (!usuarios.containsKey(idMesero)) {
+            throw new Exception("El mesero no existe.");
+        }
+        if (!(usuarios.get(idMesero) instanceof Mesero)) {
+            throw new Exception("El usuario no es un mesero.");
+        }
+        if (!juegosPrestamo.containsKey(idJuego)) {
+            throw new Exception("El juego no existe.");
+        }
+        Administrador admin = (Administrador) usuarios.get(idAdmin);
+        admin.agregarJuegoConocidoMesero((Mesero) usuarios.get(idMesero), idJuego);
+    }
     
 }
 

@@ -13,4 +13,9 @@ public class Pasteleria extends ProductoMenu {
     public List<String> getAlergenos() {
         return alergenos;
     }
+    
+    @Override
+    public String toString() {
+        return super.toString() + "|alergenos\t" + String.join(",", this.alergenos);
+    }
 }

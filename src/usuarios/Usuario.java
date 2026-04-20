@@ -5,9 +5,9 @@ import java.util.List;
 import juegos.*;
 
 public abstract class Usuario {
-	private String login;
-	private String contrasena;
-	private String nombre;
+	protected String login;
+	protected String contrasena;
+	protected String nombre;
 	private List<JuegoMesa> favoritos;
 	
 
@@ -70,6 +70,11 @@ public abstract class Usuario {
 
 	public boolean esFavorito(JuegoMesa juego){
 		return favoritos.contains(juego);
+	}
+	
+	@Override
+	public String toString() {
+	    return "login\t" + this.login + "|contrasena\t" + this.contrasena;
 	}
 }
 

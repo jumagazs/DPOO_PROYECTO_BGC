@@ -14,6 +14,8 @@ public class Pedido {
     private String estado;
     private Mesa mesa;
     private List<DetallePedido> detalles;
+    private static final double IMPOCONSUMO = 0.08;
+    private static final double PROPINA_SUGERIDA = 0.10;
 
     public Pedido(String idPedido, String fecha, Mesa mesa) {
         this.idPedido = idPedido;
@@ -73,5 +75,29 @@ public class Pedido {
     
     public void prepararPedido() {
     		this.estado = "PREPARADO";
+    }
+    
+    @Override
+    public String toString() {
+        return "id\t" + this.idPedido + "|fecha\t" + this.fecha + "|mesa\t" + this.mesa.getIdMesa() + "|subtotal\t" + this.subtotal + "|impuesto\t" + this.impuestoConsumo + "|propina\t" + this.propina + "|total\t" + this.total;
+    }
+    
+    public void setSubtotal(double subtotal) {
+        this.subtotal = subtotal;
+    }
+
+    public void setImpuestoConsumo(double impuestoConsumo) {
+        this.impuestoConsumo = impuestoConsumo;
+    }
+
+    public void setPropina(double propina) {
+        this.propina = propina;
+    }
+
+    public void setTotal(double total) {
+        this.total = total;
+    }
+    public void confirmar() {
+        this.calcularValores(IMPOCONSUMO, PROPINA_SUGERIDA);
     }
 }

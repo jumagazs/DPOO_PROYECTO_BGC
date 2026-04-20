@@ -19,5 +19,10 @@ public class Cocinero extends Empleado {
 	public void atenderPedidos(Pedido pedido) {
 		pedido.prepararPedido();
 	}
+	
+	@Override
+	public String toString() {
+	    return "login\t" + this.login + "|contrasena\t" + this.contrasena;
+	}
 
 }

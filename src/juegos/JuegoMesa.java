@@ -1,16 +1,16 @@
 package juegos;
 
 public class JuegoMesa {
-    private String nombre;
-    private int anioPublicacion;
-    private String editorJuego;
-    private String categoria;
-    private int minJugadores;
-    private int maxJugadores;
-    private boolean esDificil;
-    private boolean jueganMenores5;
-    private boolean jueganMenores18;
-    private String idJuego;
+    protected String nombre;
+    protected int anioPublicacion;
+    protected String editorJuego;
+    protected String categoria;
+    protected int minJugadores;
+    protected int maxJugadores;
+    protected boolean esDificil;
+    protected boolean jueganMenores5;
+    protected boolean jueganMenores18;
+    protected String idJuego;
 
     public JuegoMesa(String nombre, int anioPublicacion, String editorJuego, String categoria, int minJugadores, int maxJugadores, boolean esDificil, boolean jueganMenores5, boolean jueganMenores18, String idJuego) {
         this.nombre = nombre;

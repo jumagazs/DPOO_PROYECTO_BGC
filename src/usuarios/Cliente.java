@@ -38,6 +38,13 @@ public class Cliente extends Usuario {
 	public void borrarCodigoDescuento() {
 		this.codigoDescuento = null;
 	}
+	
+	@Override
+	public String toString() {
+	    return "login\t" + this.login + "|contrasena\t" + this.contrasena + "|puntos\t" + this.puntosFidelidad;
+	}
+	
+	
     
     
     

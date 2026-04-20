@@ -67,6 +67,11 @@ public class Mesa {
 	public void setHayJovenes(boolean hayJovenes) {
 		this.hayJovenes = hayJovenes;
 	}
+	
+	@Override
+	public String toString() {
+	    return "id\t" + this.idMesa + "|capacidad\t" + this.capacidad + "|ocupada\t" + this.ocupada + "|personas\t" + this.personasActuales + "|jovenes\t" + this.hayJovenes + "|ninos\t" + this.hayNinos;
+	}
     
     
 }
