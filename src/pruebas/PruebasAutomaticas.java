@@ -28,7 +28,7 @@ public class PruebasAutomaticas {
             }
             try {
                 cafe.registrarCliente("cliente1", "1234");
-                System.out.println("RF1 ERROR - Debio bloquear duplicado");
+                System.out.println("RF1 ERROR - Debió bloquear duplicado");
             } catch (Exception e) {
                 System.out.println("RF1 OK - Duplicado bloqueado: " + e.getMessage());
             }

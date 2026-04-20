@@ -29,7 +29,7 @@ public class GestorPersistencia {
         this.rutaArchivo = rutaArchivo;
     }
 
-    // ---- GUARDAR ----
+    // GUARDAR
 
     public void guardarTodo(Cafe cafe) throws Exception {
         PrintWriter pw = new PrintWriter(new FileWriter(this.rutaArchivo));
