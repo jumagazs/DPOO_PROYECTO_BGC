@@ -16,7 +16,7 @@ public class PruebasCafe {
 
 	public static void main(String[] args) throws Exception {
 	    Cafe cafe = new Cafe();
-	    GestorPersistencia gestor = new GestorPersistencia("C:/Users/jumag/OneDrive/Documentos/U/Diseño y Programación Orientada a Objetos/Proyectos/Proyecto 1/Datos/datos.txt");
+	    GestorPersistencia gestor = new GestorPersistencia("datos/datosTest.txt");
 	    gestor.cargarTodo(cafe);
 	    Scanner sc = new Scanner(System.in);
 

@@ -1,0 +1,19 @@
+[administradores]
+login	admin|contrasena	admin123
+[clientes]
+[meseros]
+[cocineros]
+[juegosPrestamo]
+[juegosVenta]
+[mesas]
+id	M1|capacidad	2|ocupada	false|personas	0|jovenes	false|ninos	false|juegosActivos	0|bebidaCaliente	false|juegoAccion	false|ocupante	null
+id	M2|capacidad	4|ocupada	false|personas	0|jovenes	false|ninos	false|juegosActivos	0|bebidaCaliente	false|juegoAccion	false|ocupante	null
+id	M3|capacidad	4|ocupada	false|personas	0|jovenes	false|ninos	false|juegosActivos	0|bebidaCaliente	false|juegoAccion	false|ocupante	null
+id	M4|capacidad	6|ocupada	false|personas	0|jovenes	false|ninos	false|juegosActivos	0|bebidaCaliente	false|juegoAccion	false|ocupante	null
+id	M5|capacidad	8|ocupada	false|personas	0|jovenes	false|ninos	false|juegosActivos	0|bebidaCaliente	false|juegoAccion	false|ocupante	null
+[prestamos]
+[ventas]
+[pedidos]
+[turnos]
+[sugerencias]
+[solicitudes]

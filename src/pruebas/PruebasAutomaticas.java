@@ -17,7 +17,7 @@ public class PruebasAutomaticas {
     public static void main(String[] args) {
         try {
             Cafe cafe = new Cafe();
-            GestorPersistencia gestor = new GestorPersistencia("C:/Users/jumag/OneDrive/Documentos/U/Diseño y Programación Orientada a Objetos/Proyectos/Proyecto 1/Datos/datosTest.txt");
+            GestorPersistencia gestor = new GestorPersistencia("datos/datos.txt");
             gestor.cargarTodo(cafe);
 
             // ---- RF1 - Registrar cliente ----
