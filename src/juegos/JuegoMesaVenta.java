@@ -29,6 +29,10 @@ public class JuegoMesaVenta extends JuegoMesa {
     public double getCostoBase() {
         return costoBase;
     }
+    
+    public void aumentarStock(int cantidad) {
+        if (cantidad > 0) this.cantidadStock += cantidad;
+    }
 
     public void reducirStock(int cantidad) throws Exception {
         if (cantidad > cantidadStock) {

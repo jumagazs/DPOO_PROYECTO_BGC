@@ -94,6 +94,20 @@ public class SugerenciaPlato {
 		return tipo;
 	}
 	
+	@Override
+	public String toString() {
+	    String alerg = (alergenos == null) ? "" : String.join(",", alergenos);
+	    return "id\t" + this.idSugerencia
+	         + "|nombre\t" + this.nombrePropuesto
+	         + "|fecha\t" + this.fechaSugerencia.toString()
+	         + "|estado\t" + this.estadoSugerencia
+	         + "|empleado\t" + this.empleado.getLogin()
+	         + "|precio\t" + this.precio
+	         + "|alcoholica\t" + this.esAlcoholica
+	         + "|caliente\t" + this.esCaliente
+	         + "|alergenos\t" + alerg
+	         + "|tipo\t" + this.tipo;
+	}
 	
 
     

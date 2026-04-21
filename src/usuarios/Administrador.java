@@ -6,6 +6,7 @@ import java.util.Map;
 
 import juegos.*;
 import mesas.*;
+import modelo.Informe;
 import pedidos.*;
 import prestamos.*;
 import productos.*;
@@ -121,26 +122,24 @@ public class Administrador extends Usuario {
 	    juegosVenta.remove(idJuego);
 	}
 	
-	public void consultarInforme(List<VentaJuego> ventas, List<Pedido> pedidos, String granularidad) {
+	public Informe consultarInforme(List<VentaJuego> ventas, List<Pedido> pedidos, String granularidad) {
 	    LocalDateTime ahora = LocalDateTime.now();
-	    double totalJuegos = 0, impuestosJuegos = 0;
-	    double totalComida = 0, impuestosComida = 0, propinasComida = 0;
+	    Informe inf = new Informe();
+	    inf.granularidad = granularidad;
 	    for (VentaJuego v : ventas) {
 	        if (dentroDeGranularidad(LocalDateTime.parse(v.getFecha()), ahora, granularidad)) {
-	            totalJuegos += v.getTotal();
-	            impuestosJuegos += v.getImpuesto();
+	            inf.totalJuegos += v.getTotal();
+	            inf.impuestosJuegos += v.getImpuesto();
 	        }
 	    }
 	    for (Pedido p : pedidos) {
 	        if (dentroDeGranularidad(LocalDateTime.parse(p.getFecha()), ahora, granularidad)) {
-	            totalComida += p.getTotal();
-	            impuestosComida += p.getImpuestoConsumo();
-	            propinasComida += p.getPropina();
+	            inf.totalComida += p.getTotal();
+	            inf.impuestosComida += p.getImpuestoConsumo();
+	            inf.propinasComida += p.getPropina();
 	        }
 	    }
-	    System.out.println("Informe " + granularidad);
-	    System.out.println("Ventas juegos | Total: " + totalJuegos + " | Impuestos: " + impuestosJuegos);
-	    System.out.println("Ventas comida | Total: " + totalComida + " | Impuestos: " + impuestosComida + " | Propinas: " + propinasComida);
+	    return inf;
 	}
 
 	private boolean dentroDeGranularidad(LocalDateTime fecha, LocalDateTime ahora, String granularidad) {
@@ -156,6 +155,51 @@ public class Administrador extends Usuario {
 	
 	public void agregarJuegoDificil(Mesero mesero, String idJuego) {
 	    mesero.agregarJuegoDificil(idJuego);
+	}
+	
+	public JuegoMesaPrestamo moverVentaAPrestamo(JuegoMesaVenta juegoVenta,String idJuegoPrestamo) throws Exception {
+	    if (juegoVenta.getCantidadStock() <= 0) {
+	        throw new Exception("No hay stock de ese juego para mover a préstamo.");
+	    }
+	    juegoVenta.reducirStock(1);
+	    return new JuegoMesaPrestamo(
+	        juegoVenta.getNombre(),
+	        juegoVenta.getAnioPublicacion(), 
+	        juegoVenta.getEditorJuego(), 
+	        juegoVenta.getCategoria(),
+	        juegoVenta.getMinJugadores(),
+	        juegoVenta.getMaxJugadores(),
+	        juegoVenta.isEsDificil(),
+	        juegoVenta.isJueganMenores5(),
+	        juegoVenta.isJueganMenores18(),
+	        idJuegoPrestamo,
+	        true,
+	        0,
+	        "Nuevo");
+	}
+	
+	
+	public void repararJuego(JuegoMesaPrestamo juegoDanado, JuegoMesaVenta juegoFuente) throws Exception {
+	    if (juegoFuente.getCantidadStock() <= 0) {
+	        throw new Exception("No hay stock de ese juego para reparar.");
+	    }
+	    if (!juegoDanado.getNombre().equals(juegoFuente.getNombre())) {
+	        throw new Exception("No se puede reparar con un juego distinto.");
+	    }
+	    juegoFuente.reducirStock(1);
+	    juegoDanado.setEstado("Nuevo");
+	    juegoDanado.setDisponible(true);
+	}
+	
+	
+	public void marcarJuegoRobado(JuegoMesaPrestamo juego) {
+	    juego.setEstado("Desaparecido");
+	    juego.setDisponible(false);
+	}
+	
+	public void reabastecerJuegoVenta(JuegoMesaVenta juego, int cantidad) throws Exception {
+	    if (cantidad <= 0) throw new Exception("Cantidad debe ser positiva.");
+	    juego.aumentarStock(cantidad);
 	}
 	
 	@Override

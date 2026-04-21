@@ -9,7 +9,7 @@ public abstract class Empleado extends Usuario {
 
     private List<Turno> turnos;
     private List<SolicitudCambioTurno> solicitudes;
-	private static double DESCUENTO_EMPLEADO = 0.20;
+	private static final double DESCUENTO_EMPLEADO = 0.20;
 
 	private String codigoDescuento;
 
@@ -78,14 +78,15 @@ public abstract class Empleado extends Usuario {
 	    return sugerencia;
 	}
 	
-    public void validarPuedeTomarPrestamo() throws Exception {
-        LocalDateTime ahora = LocalDateTime.now();
-        for (Turno t : this.turnos) {
-            if (!ahora.isBefore(t.getHoraInicio()) && !ahora.isAfter(t.getHoraFin())) {
-                throw new Exception("El empleado no puede solicitar juegos durante su turno.");
-            }
-        }
-    }
+	public boolean estaEnTurno() {
+	    LocalDateTime ahora = LocalDateTime.now();
+	    for (Turno t : this.turnos) {
+	        if (!ahora.isBefore(t.getHoraInicio()) && !ahora.isAfter(t.getHoraFin())) {
+	            return true;
+	        }
+	    }
+	    return false;
+	}
 	
     public void eliminarTurno(String idTurno) throws Exception {
         Turno encontrado = null;

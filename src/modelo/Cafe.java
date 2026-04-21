@@ -38,6 +38,7 @@ public class Cafe {
     private int consecutivoSugerencias;
     private int consecutivoProductos;
     private int consecutivoTurnos;
+    private int capacidadMaximaCafe;
     
 
     public Cafe() {
@@ -57,6 +58,10 @@ public class Cafe {
         this.sugerencias = new ArrayList<>();
         this.consecutivoSugerencias = 1;
         this.consecutivoTurnos = 1;
+        this.consecutivoJuegosPrestamos = 1;
+        this.consecutivoJuegosVentas = 1;
+        this.consecutivoProductos = 1;
+        this.capacidadMaximaCafe = 40;
     }
 
     public Cliente registrarCliente(String login, String contrasena) throws Exception {
@@ -112,7 +117,15 @@ public class Cafe {
     }
 
     public Mesa asignarMesaACliente(Cliente cliente, int cantidadPersonas, boolean hayJovenes, boolean hayNinos) throws Exception {
-        Mesa mejorMesa = null;
+        int personasActuales = 0;
+        for (Mesa m : mesas.values()) {
+            if (m.isOcupada()) personasActuales += m.getPersonasActuales();
+        }
+        if (personasActuales + cantidadPersonas > capacidadMaximaCafe) {
+            throw new Exception("El café está lleno. Capacidad máxima alcanzada.");
+        }
+    	
+    		Mesa mejorMesa = null;
 
         for (Mesa mesa : mesas.values()) {
             if (!mesa.isOcupada() && mesa.getCapacidad() >= cantidadPersonas) {
@@ -125,36 +138,11 @@ public class Cafe {
         if (mejorMesa == null) {
             throw new Exception("No hay mesas disponibles para esa cantidad de personas.");
         }
-
-        mejorMesa.asignarMesa(cantidadPersonas,hayJovenes,hayNinos);
+        mejorMesa.asignarMesa(cantidadPersonas,hayJovenes,hayNinos,cliente);
         return mejorMesa;
     }
     
-    public Prestamo solicitarPrestamoJuego(Cliente cliente, Mesa mesa, String idJuegoPrestamo, boolean fueExplicado) throws Exception {
-        if (mesa == null || !mesa.isOcupada()) {
-            throw new Exception("El cliente debe tener una mesa asignada para pedir un préstamo.");
-        }
 
-        if (!juegosPrestamo.containsKey(idJuegoPrestamo)) {
-            throw new Exception("El juego solicitado no existe.");
-        }
-
-        JuegoMesaPrestamo juego = juegosPrestamo.get(idJuegoPrestamo);
-
-        if (!juego.isDisponible()) {
-            throw new Exception("El juego no está disponible para préstamo.");
-        }
-
-        String idPrestamo = "PR" + consecutivoPrestamos;
-        consecutivoPrestamos++;
-
-        Prestamo nuevoPrestamo = new Prestamo(idPrestamo, "2026-04-17", fueExplicado, juego, cliente);
-        prestamos.add(nuevoPrestamo);
-
-        juego.setDisponible(false);
-
-        return nuevoPrestamo;
-    }
     
     public List<Prestamo> getPrestamos() {
         return prestamos;
@@ -172,6 +160,24 @@ public class Cafe {
             throw new Exception("No existe un préstamo con ese id.");
         }
         prestamoEncontrado.devolver();
+        Mesa m = prestamoEncontrado.getMesa();
+        if (m != null) {
+            m.devolverJuego();
+            if (prestamoEncontrado.getJuego().getCategoria().equalsIgnoreCase("Accion")) {
+                boolean aunHayAccion = false;
+                for (Prestamo p : prestamos) {
+                    if (!p.fueDevuelto() && p.getMesa() != null
+                            && p.getMesa().getIdMesa().equals(m.getIdMesa())
+                            && p.getJuego().getCategoria().equalsIgnoreCase("Accion")) {
+                        aunHayAccion = true;
+                        break;
+                    }
+                }
+                if (!aunHayAccion) {
+                	m.setTieneJuegoAccion(false);
+                }
+            }
+        }
     }
     
     public Pedido crearPedido(Mesa mesa) throws Exception {
@@ -200,12 +206,35 @@ public class Cafe {
         if (cantidad <= 0) {
             throw new Exception("La cantidad debe ser mayor que cero.");
         }
-
+        
         ProductoMenu producto = menu.get(idProducto);
 
         if (!producto.isDisponible()) {
             throw new Exception("El producto no está disponible.");
         }
+        
+        Mesa mesa = pedido.getMesa();
+        
+        /// Restricción alcohol y calientes
+        if (producto instanceof Bebida) {
+            Bebida b = (Bebida) producto;
+            if (b.isAlcoholica() && (mesa.isHayJovenes() || mesa.isHayNinos())) {
+                throw new Exception("No se puede servir alcohol en una mesa con menores.");
+            }
+            if (b.isCaliente() && mesa.isTieneJuegoAccion())
+                throw new Exception("No se puede servir bebida caliente en mesa con juego de Acción.");
+            if (b.isCaliente()) mesa.setTieneBebidaCaliente(true);
+        }
+        
+        //Restricción alérgenos
+        if (producto instanceof Pasteleria) {
+            Pasteleria p = (Pasteleria) producto;
+            if (p.getAlergenos() != null && !p.getAlergenos().isEmpty()) {
+                System.out.println("Aviso: el producto " + p.getNombre()
+                    + " contiene alérgenos: " + String.join(", ", p.getAlergenos()));
+            }
+        }
+        
 
         DetallePedido detalle = new DetallePedido(cantidad, producto);
         pedido.agregarDetalle(detalle);
@@ -378,44 +407,59 @@ public class Cafe {
 
     public Prestamo solicitarPrestamoJuegoFlexible(String login, String idJuego, boolean fueExplicado) throws Exception {
 
-        if (!usuarios.containsKey(login)) {
-            throw new Exception("El usuario no existe.");
-        }
-
-        Usuario usuario = usuarios.get(login);
-
-        if (!juegosPrestamo.containsKey(idJuego)) {
-            throw new Exception("El juego no existe.");
-        }
-
-        JuegoMesaPrestamo juego = juegosPrestamo.get(idJuego);
+    	 	Usuario usuario = validarUsuario(login);
+    	    JuegoMesaPrestamo juego = validarJuegoPrestamo(idJuego);
+    	    
 
         if (!juego.isDisponible()) {
             throw new Exception("El juego no está disponible.");
         }
+        Mesa mesaDelUsuario = null;
 
         if (usuario instanceof Cliente) {
-
-            boolean tieneMesa = false;
-
             for (Mesa mesa : mesas.values()) {
-                if (mesa.isOcupada()) {
-                    tieneMesa = true;
+                if (mesa.isOcupada() && mesa.getOcupante() != null
+                        && mesa.getOcupante().getLogin().equals(login)) {
+                    mesaDelUsuario = mesa;
                     break;
                 }
             }
-
-            if (!tieneMesa) {
+            if (mesaDelUsuario == null) {
                 throw new Exception("El cliente debe tener una mesa asignada.");
             }
-        }
-
-        else if (usuario instanceof Empleado) {
-
+            if (mesaDelUsuario.getJuegosPrestadosActivos() >= 2) {
+                throw new Exception("La mesa ya tiene 2 juegos prestados.");
+            }        if (juego.getMinJugadores() > mesaDelUsuario.getPersonasActuales()
+                    || juego.getMaxJugadores() < mesaDelUsuario.getPersonasActuales()) {
+                throw new Exception("El número de personas no es adecuado para jugar.");
+            }
+            if (mesaDelUsuario.isHayJovenes() && !juego.isJueganMenores18()) {
+                throw new Exception("No pueden jugarlo menores de 18.");
+            }
+            if (mesaDelUsuario.isHayNinos() && !juego.isJueganMenores5()) {
+                throw new Exception("No pueden jugarlo menores de 5.");
+            }
+            if (mesaDelUsuario.isTieneBebidaCaliente() && juego.getCategoria().equalsIgnoreCase("Accion")) {
+                throw new Exception("Hay bebida caliente en la mesa, no se permite juego de Acción.");
+            }
+    		}else if (usuario instanceof Empleado) {
             Empleado emp = (Empleado) usuario;
-
-            ((Empleado) usuario).validarPuedeTomarPrestamo();
-        }
+            if (emp.estaEnTurno()) {
+                boolean hayClientes = false;
+                for (Mesa mesa : mesas.values()) {
+                    if (mesa.isOcupada()) { hayClientes = true; break; }
+                }
+                if (hayClientes) {
+                    throw new Exception("El empleado no puede pedir préstamos en turno mientras haya clientes.");
+                }
+            }     
+        } else if (usuario instanceof Administrador) {
+                throw new Exception("El administrador no puede solicitar préstamos.");
+            }
+            
+            
+            
+            
 
         String fechaActual = LocalDateTime.now().toString();
 
@@ -426,12 +470,18 @@ public class Cafe {
             fechaActual,
             fueExplicado,
             juego,
-            usuario
-        );
+            usuario,
+            mesaDelUsuario);
 
         prestamos.add(prestamo);
 
         juego.setDisponible(false);
+        if (mesaDelUsuario != null) {
+            mesaDelUsuario.nuevoJuegoPrestado();
+            if (juego.getCategoria().equalsIgnoreCase("Accion")) {
+                mesaDelUsuario.setTieneJuegoAccion(true);
+            }
+        }
 
         return prestamo;
     }
@@ -475,24 +525,14 @@ public class Cafe {
     //REquerimiento 19 prestamo de empleado a cliente
     
     public Prestamo prestamoDeJuegos(String idJuego, String idMesero, String idMesa, String idCliente) throws Exception {
-        if (!usuarios.containsKey(idMesero))
-            throw new Exception("El Meseroo no existe.");
-        if (!usuarios.containsKey(idCliente))
-            throw new Exception("El Cliente no existe.");
-        if (!(usuarios.get(idMesero) instanceof Mesero))
-            throw new Exception("El usuario no es un mesero.");
-        if (!(usuarios.get(idCliente) instanceof Cliente))
-            throw new Exception("El usuario no es un cliente.");
-        if (!mesas.containsKey(idMesa))
-            throw new Exception("La mesa no existe.");	
-	    	if(!this.juegosPrestamo.containsKey(idJuego)) {
-	    			throw new Exception("No existe el juego para prestamos");
-	    		}
-	    	JuegoMesaPrestamo juegoMesaPrestamo = this.juegosPrestamo.get(idJuego);
-	    	Mesa mesa = this.mesas.get(idMesa);
-	    	Usuario mesero = this.usuarios.get(idMesero);
-	    	Usuario cliente = this.usuarios.get(idCliente);
-	    	
+        Mesero mesero = validarMesero(idMesero);
+        Cliente cliente = validarCliente(idCliente);
+        Mesa mesa = validarMesa(idMesa);
+        JuegoMesaPrestamo juegoMesaPrestamo = validarJuegoPrestamo(idJuego);
+
+        if (mesa.getJuegosPrestadosActivos() >= 2) {
+	            throw new Exception("La mesa ya tiene 2 juegos prestados (máximo permitido).");
+        }
 	    	
 	    	if(!juegoMesaPrestamo.isDisponible()) {
 	    		throw new Exception("No está disponible el juego");
@@ -511,11 +551,19 @@ public class Cafe {
 	    		throw new Exception("No pueden jugarlo menores de 5");
 	    	}
 	    	
+        if (mesa.isTieneBebidaCaliente() && juegoMesaPrestamo.getCategoria().equalsIgnoreCase("Accion"))
+            throw new Exception("No se puede prestar un juego de Acción: hay una bebida caliente en la mesa.");
+	    	
 	    	String idPrestamo = "PR" + consecutivoPrestamos++;
 	    	boolean fueExplicado = juegoMesaPrestamo.isEsDificil() && ((Mesero) mesero).puedeExplicar(idJuego);
 	    	Prestamo prestamo = ((Mesero) mesero).realizarPrestamo(juegoMesaPrestamo, mesa, idPrestamo, LocalDateTime.now().toString(), fueExplicado,(Cliente) cliente);
 	    	juegoMesaPrestamo.setDisponible(false);
 	    	prestamos.add(prestamo);
+	    	
+	    	mesa.nuevoJuegoPrestado();
+	    	if (juegoMesaPrestamo.getCategoria().equalsIgnoreCase("Accion")) {
+	    	    mesa.setTieneJuegoAccion(true);
+	    	}
     		
 	    	return prestamo;
     	
@@ -572,16 +620,6 @@ public class Cafe {
         this.juegosVenta.put(idJuegoVenta, juegoMesaVenta);
     }
     
-    public void agregar(String idAdmin,String nombre, int anioPublicacion, String editorJuego, String categoria, int minJugadores, int maxJugadores, boolean esDificil, boolean jueganMenores5, boolean jueganMenores18 , double precioVenta, int cantidadStock, double costoBase) throws Exception{
-        if (!usuarios.containsKey(idAdmin))
-            throw new Exception("El usuario no existe.");
-        if (!(usuarios.get(idAdmin) instanceof Administrador))
-            throw new Exception("El usuario no es un administrador.");
-        Usuario admin = this.usuarios.get(idAdmin);
-        String idJuegoVenta = "JP" + this.consecutivoVentas++;
-        JuegoMesaVenta juegoMesaVenta = ((Administrador) admin).agregarJuegoVenta(nombre, anioPublicacion, editorJuego, categoria, minJugadores, maxJugadores, esDificil, jueganMenores5, jueganMenores18, idJuegoVenta,precioVenta,cantidadStock, costoBase);
-        this.juegosVenta.put(idJuegoVenta, juegoMesaVenta);
-    }
     
     public void registrarMesero(String idAdmin, String login, String contrasena) throws Exception {
         if (!usuarios.containsKey(idAdmin))
@@ -770,7 +808,7 @@ public class Cafe {
         admin.eliminarJuegoVenta(this.juegosVenta, idJuego);
     }
     
-    public void consultarInforme(String idAdmin, String granularidad) throws Exception {
+    public Informe consultarInforme(String idAdmin, String granularidad) throws Exception {
         if (!usuarios.containsKey(idAdmin)) {
             throw new Exception("El usuario no existe.");
         }
@@ -778,7 +816,7 @@ public class Cafe {
             throw new Exception("El usuario no es un administrador.");
         }
         Administrador admin = (Administrador) usuarios.get(idAdmin);
-        admin.consultarInforme(this.ventas, this.pedidos, granularidad);
+        return admin.consultarInforme(this.ventas, this.pedidos, granularidad);
     }
     
     public Map<String, JuegoMesaPrestamo> getJuegosPrestamo() {
@@ -855,6 +893,20 @@ public class Cafe {
 		return sugerencias;
 	}
 	
+	
+	public int getCapacidadMaximaCafe() {
+		return capacidadMaximaCafe;
+	}
+
+	public void setCapacidadMaximaCafe(int capacidadMaximaCafe) {
+		this.capacidadMaximaCafe = capacidadMaximaCafe;
+	}
+	
+
+	public List<SolicitudCambioTurno> getSolicitudesCambioTurno() {
+		return solicitudesCambioTurno;
+	}
+
 	public void sincronizarConsecutivos() {
 	    this.consecutivoJuegosPrestamos = this.juegosPrestamo.size() + 1;
 	    this.consecutivoJuegosVentas = this.juegosVenta.size() + 1;
@@ -864,6 +916,8 @@ public class Cafe {
 	    this.consecutivoSolicitudes = this.solicitudesCambioTurno.size() + 1;
 	    this.consecutivoSugerencias = this.sugerencias.size() + 1;
 	    this.consecutivoProductos = this.menu.size() + 1;
+	    this.consecutivoSolicitudes = this.solicitudesCambioTurno.size() + 1;
+	    this.consecutivoSugerencias = this.sugerencias.size() + 1;
 	    this.consecutivoTurnos = 1;
 	    for (Usuario u : this.usuarios.values()) {
 	        if (u instanceof Empleado) {
@@ -872,7 +926,129 @@ public class Cafe {
 	    }
 	}
     
+	public void eliminarJuegoFavoritoDeUsuario(String login, String idJuego) throws Exception {
+	    if (!usuarios.containsKey(login)) throw new Exception("El usuario no existe.");
+	    if (!juegosPrestamo.containsKey(idJuego)) throw new Exception("El juego no existe.");
+	    usuarios.get(login).eliminarJuegoFavorito(juegosPrestamo.get(idJuego));
+	}
     
+	public void moverJuegoVentaAPrestamo(String idAdmin, String idJuegoVenta) throws Exception {
+	    Administrador admin = validarAdmin(idAdmin);
+	    JuegoMesaVenta juegoVenta = validarJuegoVenta(idJuegoVenta);
+	    String nuevoId = "JP" + consecutivoJuegosPrestamos++;
+	    JuegoMesaPrestamo nuevo = admin.moverVentaAPrestamo(juegoVenta, nuevoId);
+	    juegosPrestamo.put(nuevoId, nuevo);
+	}
+
+	public void repararJuego(String idAdmin, String idJuegoPrestamo, String idJuegoVenta) throws Exception {
+	    Administrador admin = validarAdmin(idAdmin);
+	    JuegoMesaPrestamo juegoPrestamo = validarJuegoPrestamo(idJuegoPrestamo);
+	    JuegoMesaVenta juegoVenta = validarJuegoVenta(idJuegoVenta);
+	    admin.repararJuego(juegoPrestamo, juegoVenta);
+	}
+
+	public void marcarJuegoRobado(String idAdmin, String idJuegoPrestamo) throws Exception {
+	    Administrador admin = validarAdmin(idAdmin);
+	    JuegoMesaPrestamo juego = validarJuegoPrestamo(idJuegoPrestamo);
+	    admin.marcarJuegoRobado(juego);
+	}
+
+	public void reabastecerJuegoVenta(String idAdmin, String idJuegoVenta, int cantidad) throws Exception {
+	    Administrador admin = validarAdmin(idAdmin);
+	    JuegoMesaVenta juego = validarJuegoVenta(idJuegoVenta);
+	    admin.reabastecerJuegoVenta(juego, cantidad);
+	}
+	
+	private Administrador validarAdmin(String idAdmin) throws Exception {
+	    if (!usuarios.containsKey(idAdmin)) {
+	        throw new Exception("El usuario no existe.");
+	    }
+	    if (!(usuarios.get(idAdmin) instanceof Administrador)) {
+	        throw new Exception("El usuario no es un administrador.");
+	    }
+	    return (Administrador) usuarios.get(idAdmin);
+	}
+	
+	private JuegoMesaPrestamo validarJuegoPrestamo(String idJuego) throws Exception {
+	    if (!juegosPrestamo.containsKey(idJuego)) {
+	        throw new Exception("El juego no existe en el inventario de préstamo.");
+	    }
+	    return juegosPrestamo.get(idJuego);
+	}
+
+	private JuegoMesaVenta validarJuegoVenta(String idJuego) throws Exception {
+	    if (!juegosVenta.containsKey(idJuego)) {
+	        throw new Exception("El juego no existe en el inventario de venta.");
+	    }
+	    return juegosVenta.get(idJuego);
+	}
+	
+	private Usuario validarUsuario(String login) throws Exception {
+	    if (!usuarios.containsKey(login)) {
+	        throw new Exception("El usuario no existe.");
+	    }
+	    return usuarios.get(login);
+	}
+
+	private Mesero validarMesero(String login) throws Exception {
+	    Usuario u = validarUsuario(login);
+	    if (!(u instanceof Mesero)) {
+	        throw new Exception("El usuario no es un mesero.");
+	    }
+	    return (Mesero) u;
+	}
+
+	private Cocinero validarCocinero(String login) throws Exception {
+	    Usuario u = validarUsuario(login);
+	    if (!(u instanceof Cocinero)) {
+	        throw new Exception("El usuario no es un cocinero.");
+	    }
+	    return (Cocinero) u;
+	}
+
+	private Cliente validarCliente(String login) throws Exception {
+	    Usuario u = validarUsuario(login);
+	    if (!(u instanceof Cliente)) {
+	        throw new Exception("El usuario no es un cliente.");
+	    }
+	    return (Cliente) u;
+	}
+
+	private Empleado validarEmpleado(String login) throws Exception {
+	    Usuario u = validarUsuario(login);
+	    if (!(u instanceof Empleado)) {
+	        throw new Exception("El usuario no es un empleado.");
+	    }
+	    return (Empleado) u;
+	}
+
+	private Mesa validarMesa(String idMesa) throws Exception {
+	    if (!mesas.containsKey(idMesa)) {
+	        throw new Exception("La mesa no existe.");
+	    }
+	    return mesas.get(idMesa);
+	}
+
+	private SolicitudCambioTurno validarSolicitud(String idSolicitud) throws Exception {
+	    for (SolicitudCambioTurno s : solicitudesCambioTurno) {
+	        if (s.getIdSolicitud().equals(idSolicitud)) return s;
+	    }
+	    throw new Exception("La solicitud no existe.");
+	}
+
+	private SugerenciaPlato validarSugerencia(String idSugerencia) throws Exception {
+	    for (SugerenciaPlato s : sugerencias) {
+	        if (s.getIdSugerencia().equals(idSugerencia)) return s;
+	    }
+	    throw new Exception("La sugerencia no existe.");
+	}
+
+	private Pedido validarPedido(String idPedido) throws Exception {
+	    for (Pedido p : pedidos) {
+	        if (p.getIdPedido().equals(idPedido)) return p;
+	    }
+	    throw new Exception("El pedido no existe.");
+	}
     
 }
 

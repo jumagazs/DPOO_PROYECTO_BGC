@@ -5,6 +5,7 @@ import java.util.*;
 import juegos.*;
 import modelo.Cafe;
 import modelo.GestorPersistencia;
+import modelo.Informe;
 import pedidos.*;
 import prestamos.*;
 import productos.*;
@@ -249,11 +250,17 @@ public class PruebasCafe {
                 System.out.println("Juego conocido agregado al mesero.");
      
             } else if (opcion == 16) {
-                cafe.consultarInforme(login, "diaria");
+                Informe inf = cafe.consultarInforme(login, "diaria");
+                System.out.println("Ventas juegos: " + inf.totalJuegos + " | Impuestos: " + inf.impuestosJuegos);
+                System.out.println("Ventas comida: " + inf.totalComida + " | Impuestos: " + inf.impuestosComida + " | Propinas: " + inf.propinasComida);
             } else if (opcion == 17) {
-                cafe.consultarInforme(login, "semanal");
+                Informe inf = cafe.consultarInforme(login, "semanal");
+                System.out.println("Ventas juegos: " + inf.totalJuegos + " | Impuestos: " + inf.impuestosJuegos);
+                System.out.println("Ventas comida: " + inf.totalComida + " | Impuestos: " + inf.impuestosComida + " | Propinas: " + inf.propinasComida);
             } else if (opcion == 18) {
-                cafe.consultarInforme(login, "mensual");
+                Informe inf = cafe.consultarInforme(login, "mensual");
+                System.out.println("Ventas juegos: " + inf.totalJuegos + " | Impuestos: " + inf.impuestosJuegos);
+                System.out.println("Ventas comida: " + inf.totalComida + " | Impuestos: " + inf.impuestosComida + " | Propinas: " + inf.propinasComida);
             } else if (opcion == 19) {
                 Map<String, List<Prestamo>> historial = cafe.consultarInventarioPrestamo(login);
                 for (Map.Entry<String, List<Prestamo>> entry : historial.entrySet()) {

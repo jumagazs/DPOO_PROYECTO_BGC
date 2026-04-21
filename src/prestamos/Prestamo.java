@@ -3,6 +3,7 @@ package prestamos;
 import java.time.LocalDateTime;
 
 import juegos.JuegoMesaPrestamo;
+import mesas.Mesa;
 import usuarios.*;
 
 public class Prestamo {
@@ -12,15 +13,17 @@ public class Prestamo {
     private boolean fueExplicado;
     private JuegoMesaPrestamo juego;
     private Usuario usuario;
+    private Mesa mesa;
 
     public Prestamo(String idPrestamo, String fechaPrestamo, boolean fueExplicado,
-                    JuegoMesaPrestamo juego, Usuario usuario) {
+                    JuegoMesaPrestamo juego, Usuario usuario, Mesa mesa) {
         this.idPrestamo = idPrestamo;
         this.fechaPrestamo = fechaPrestamo;
         this.fechaDevolucion = null;
         this.fueExplicado = fueExplicado;
         this.juego = juego;
         this.usuario = usuario;
+        this.mesa = mesa;
     }
 
     public String getIdPrestamo() {
@@ -55,9 +58,15 @@ public class Prestamo {
         return fechaDevolucion != null;
     }
     
-    @Override
+    public Mesa getMesa() {
+		return mesa;
+	}
+
+	@Override
     public String toString() {
-        return "id\t" + this.idPrestamo + "|fechaPrestamo\t" + this.fechaPrestamo + "|fechaDevolucion\t" + this.fechaDevolucion + "|explicado\t" + this.fueExplicado + "|juego\t" + this.juego.getIdJuegoPrestamo() + "|usuario\t" + this.usuario.getLogin();
+		String idMesa = (mesa == null) ? "null" : mesa.getIdMesa();
+        return "id\t" + this.idPrestamo + "|fechaPrestamo\t" + this.fechaPrestamo + "|fechaDevolucion\t" + this.fechaDevolucion + "|explicado\t" + this.fueExplicado + "|juego\t" + this.juego.getIdJuegoPrestamo() + "|usuario\t" 
+        			+ this.usuario.getLogin() + "|mesa\t" + idMesa;
     }
     
     public void devolver() throws Exception {

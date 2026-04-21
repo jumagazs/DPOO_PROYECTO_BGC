@@ -100,6 +100,15 @@ public class GestorPersistencia {
                 }
             }
         }
+        pw.println("[sugerencias]");
+        for (SugerenciaPlato s : cafe.getSugerencias()) {
+            pw.println(s.toString());
+        }
+
+        pw.println("[solicitudes]");
+        for (SolicitudCambioTurno s : cafe.getSolicitudesCambioTurno()) {
+            pw.println(s.toString());
+        }
 
         pw.close();
     }
@@ -198,7 +207,30 @@ public class GestorPersistencia {
                 } else if (seccionActual.equals("[mesas]")) {
                     String id = p[0].split("\t")[1];
                     int capacidad = Integer.parseInt(p[1].split("\t")[1]);
-                    cafe.agregarMesa(new Mesa(id, capacidad));
+                    Mesa m = new Mesa(id, capacidad);
+                    if (p.length > 2) {
+                        boolean ocupada = Boolean.parseBoolean(p[2].split("\t")[1]);
+                        int personas = Integer.parseInt(p[3].split("\t")[1]);
+                        boolean jovenes = Boolean.parseBoolean(p[4].split("\t")[1]);
+                        boolean ninos = Boolean.parseBoolean(p[5].split("\t")[1]);
+                        int juegosAct = Integer.parseInt(p[6].split("\t")[1]);
+                        boolean bebidaCaliente = Boolean.parseBoolean(p[7].split("\t")[1]);
+                        boolean juegoAccion = Boolean.parseBoolean(p[8].split("\t")[1]);
+                        String loginOcupante = p[9].split("\t")[1];
+
+                        Cliente ocupante = null;
+                        if (!loginOcupante.equals("null")) {
+                            Usuario u = cafe.getUsuarios().get(loginOcupante);
+                            if (u instanceof Cliente) ocupante = (Cliente) u;
+                        }
+                        if (ocupada) {
+                            m.asignarMesa(personas, jovenes, ninos, ocupante);
+                        }
+                        for (int i = 0; i < juegosAct; i++) m.nuevoJuegoPrestado();
+                        m.setTieneBebidaCaliente(bebidaCaliente);
+                        m.setTieneJuegoAccion(juegoAccion);
+                    }
+                    cafe.agregarMesa(m);
 
                 } else if (seccionActual.equals("[prestamos]")) {
                     String id = p[0].split("\t")[1];
@@ -207,12 +239,22 @@ public class GestorPersistencia {
                     boolean explicado = Boolean.parseBoolean(p[3].split("\t")[1]);
                     String idJuego = p[4].split("\t")[1];
                     String loginUsuario = p[5].split("\t")[1];
+                    String idMesa = p[6].split("\t")[1];
+
                     JuegoMesaPrestamo juego = cafe.getJuegosPrestamo().get(idJuego);
                     Usuario usuario = cafe.getUsuarios().get(loginUsuario);
-                    Prestamo prestamo = new Prestamo(id, fechaPrestamo, explicado, juego, usuario);
+                    Mesa mesa = null;
+                    
+                    if (!idMesa.equals("null")) {
+                        for (Mesa mm : cafe.getMesas()) {
+                            if (mm.getIdMesa().equals(idMesa)) { mesa = mm; break; }
+                        }
+                    }
+                    Prestamo prestamo = new Prestamo(id, fechaPrestamo, explicado, juego, usuario, mesa);
                     if (!fechaDevolucion.equals("null")) {
                         prestamo.registrarDevolucion(fechaDevolucion);
                     }
+                    
                     cafe.getPrestamos().add(prestamo);
 
                 } else if (seccionActual.equals("[ventas]")) {
@@ -239,6 +281,7 @@ public class GestorPersistencia {
                     double impuesto = Double.parseDouble(p[4].split("\t")[1]);
                     double propina = Double.parseDouble(p[5].split("\t")[1]);
                     double total = Double.parseDouble(p[6].split("\t")[1]);
+                    String estado = p[7].split("\t")[1];
                     Mesa mesa = null;
                     for (Mesa m : cafe.getMesas()) {
                         if (m.getIdMesa().equals(idMesa)) {
@@ -251,7 +294,47 @@ public class GestorPersistencia {
                     pedido.setImpuestoConsumo(impuesto);
                     pedido.setPropina(propina);
                     pedido.setTotal(total);
+                    pedido.setEstado(estado);
                     cafe.getPedidos().add(pedido);
+                } else if (seccionActual.equals("[sugerencias]")) {
+                    String id = p[0].split("\t")[1];
+                    String nombre = p[1].split("\t")[1];
+                    LocalDateTime fecha = LocalDateTime.parse(p[2].split("\t")[1]);
+                    String estado = p[3].split("\t")[1];
+                    String loginEmp = p[4].split("\t")[1];
+                    double precio = Double.parseDouble(p[5].split("\t")[1]);
+                    boolean alc = Boolean.parseBoolean(p[6].split("\t")[1]);
+                    boolean cal = Boolean.parseBoolean(p[7].split("\t")[1]);
+                    String[] alergTokens = p[8].split("\t");
+                    List<String> alerg = new ArrayList<>();
+                    if (alergTokens.length > 1 && !alergTokens[1].isEmpty()) {
+                        for (String a : alergTokens[1].split(",")) alerg.add(a);
+                    }
+                    String tipo = p[9].split("\t")[1];
+                    Empleado emp = (Empleado) cafe.getUsuarios().get(loginEmp);
+                    SugerenciaPlato sug = new SugerenciaPlato(id, nombre, fecha, estado, emp,
+                            precio, alc, cal, alerg, tipo);
+                    cafe.getSugerencias().add(sug);
+                }else if (seccionActual.equals("[solicitudes]")) {
+                    String id = p[0].split("\t")[1];
+                    String tipo = p[1].split("\t")[1];
+                    LocalDateTime fecha = LocalDateTime.parse(p[2].split("\t")[1]);
+                    boolean aprobada = Boolean.parseBoolean(p[3].split("\t")[1]);
+                    String loginSol = p[4].split("\t")[1];
+                    String idTurnoSol = p[5].split("\t")[1];
+                    String loginDest = p[6].split("\t")[1];
+                    String idTurnoDest = p[7].split("\t")[1];
+
+                    Empleado sol = (Empleado) cafe.getUsuarios().get(loginSol);
+                    Empleado dest = loginDest.equals("null") ? null
+                            : (Empleado) cafe.getUsuarios().get(loginDest);
+                    Turno turnoSol = sol.getTurno(idTurnoSol);
+                    Turno turnoDest = (dest == null || idTurnoDest.equals("null")) ? null
+                            : dest.getTurno(idTurnoDest);
+                    SolicitudCambioTurno sc = new SolicitudCambioTurno(id, tipo, fecha, sol, dest,
+                            turnoSol, turnoDest);
+                    if (aprobada) sc.aprobar();
+                    cafe.getSolicitudesCambioTurno().add(sc);
                 }
                 
                 

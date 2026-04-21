@@ -79,8 +79,11 @@ public class Pedido {
     
     @Override
     public String toString() {
-        return "id\t" + this.idPedido + "|fecha\t" + this.fecha + "|mesa\t" + this.mesa.getIdMesa() + "|subtotal\t" + this.subtotal + "|impuesto\t" + this.impuestoConsumo + "|propina\t" + this.propina + "|total\t" + this.total;
-    }
+    	return "id\t" + this.idPedido + "|fecha\t" + this.fecha
+    	         + "|mesa\t" + this.mesa.getIdMesa() + "|subtotal\t" + this.subtotal
+    	         + "|impuesto\t" + this.impuestoConsumo + "|propina\t" + this.propina
+    	         + "|total\t" + this.total + "|estado\t" + this.estado;
+    	}
     
     public void setSubtotal(double subtotal) {
         this.subtotal = subtotal;
@@ -100,4 +103,14 @@ public class Pedido {
     public void confirmar() {
         this.calcularValores(IMPOCONSUMO, PROPINA_SUGERIDA);
     }
+
+	public String getEstado() {
+		return estado;
+	}
+
+	public void setEstado(String estado) {
+		this.estado = estado;
+	}
+    
+    
 }

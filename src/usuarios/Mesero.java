@@ -44,7 +44,7 @@ public class Mesero extends Empleado {
     }
     
     public Prestamo realizarPrestamo(JuegoMesaPrestamo juego, Mesa mesa, String idPrestamo, String fecha, boolean fueExplicado,Cliente cliente) {
-        return new Prestamo(idPrestamo, fecha, fueExplicado, juego, cliente);
+        return new Prestamo(idPrestamo, fecha, fueExplicado, juego, cliente,mesa);
     }
     
 

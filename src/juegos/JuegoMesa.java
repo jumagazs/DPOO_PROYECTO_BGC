@@ -67,17 +67,29 @@ public class JuegoMesa {
 
 
 
+	public String getEditorJuego() {
+		return editorJuego;
+	}
+
+
+
+	public int getAnioPublicacion() {
+		return anioPublicacion;
+	}
+
+
+
 	@Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
 
         JuegoMesa juego = (JuegoMesa) obj;
-        return nombre.equals(juego.nombre);
+        return this.idJuego.equals(juego.idJuego);
     }
 
     @Override
     public int hashCode() {
-        return nombre.hashCode();
+        return this.idJuego.hashCode();
     }
 }

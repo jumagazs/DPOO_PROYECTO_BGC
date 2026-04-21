@@ -64,4 +64,17 @@ public class SolicitudCambioTurno {
     public Turno getTurnoDestino() {
         return turnoDestino;
     }
+    public String toString() {
+        String loginDestino = (empleadoDestino == null) ? "null" : empleadoDestino.getLogin();
+        String idTurnoDestino = (turnoDestino == null) ? "null" : turnoDestino.getIdTurno();
+        return "id\t" + this.idSolicitud
+             + "|tipo\t" + this.tipoSolicitud
+             + "|fecha\t" + this.fechaSolicitud.toString()
+             + "|aprobada\t" + this.aprobada
+             + "|solicitante\t" + this.solicitante.getLogin()
+             + "|turnoSolicitante\t" + this.turnoSolicitante.getIdTurno()
+             + "|empleadoDestino\t" + loginDestino
+             + "|turnoDestino\t" + idTurnoDestino;
+    }
+    
 }
